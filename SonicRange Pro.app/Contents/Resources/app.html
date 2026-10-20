@@ -1,0 +1,3112 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="theme-color" content="#131822" />
+  <title>SonicRange Pro — Аудіометрія та тест слуху для звукорежисерів</title>
+  <link rel="manifest" href="manifest.json" />
+  <link rel="icon" type="image/svg+xml" href="icon.svg" />
+  <link rel="apple-touch-icon" href="icon.svg" />
+  <style>
+:root {
+  --bg-deep: #0b0e14;
+  --bg-rack: #131822;
+  --bg-panel: #1a2130;
+  --bg-input: #0e131d;
+  --border-rack: #283246;
+  --border-highlight: #3a4966;
+  --text-main: #e6edf7;
+  --text-muted: #8b9bb4;
+  --accent-cyan: #00d4ff;
+  --accent-amber: #ffaa00;
+  --accent-green: #18e299;
+  --accent-red: #ff4d6a;
+  --ear-left: #38bdf8;
+  --ear-right: #fb7185;
+  --font-mono: 'JetBrains Mono', 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, monospace;
+  --font-sans: -apple-system, BlinkMacSystemFont, 'Inter', 'Segoe UI', Roboto, sans-serif;
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  background-color: var(--bg-deep);
+  color: var(--text-main);
+  font-family: var(--font-sans);
+  line-height: 1.45;
+  min-height: 100vh;
+  padding: 14px 18px;
+}
+
+.app-shell {
+  max-width: 1440px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+/* Header */
+.studio-header {
+  background: linear-gradient(180deg, #1a2232 0%, #121722 100%);
+  border: 1px solid var(--border-rack);
+  border-radius: 10px;
+  padding: 12px 18px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 14px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.45);
+}
+
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.logo-led {
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: #475569;
+  box-shadow: inset 0 1px 3px rgba(0,0,0,0.6);
+  transition: all 0.25s ease;
+}
+
+.logo-led.active {
+  background: var(--accent-green);
+  box-shadow: 0 0 12px var(--accent-green), 0 0 4px #fff;
+}
+
+.brand h1 {
+  font-size: 1.25rem;
+  letter-spacing: 1.2px;
+  font-weight: 800;
+}
+
+.brand h1 span {
+  color: var(--accent-cyan);
+}
+
+.subtitle {
+  font-size: 0.8rem;
+  color: var(--text-muted);
+}
+
+.header-meters {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  flex-wrap: wrap;
+}
+
+.sample-rate-badge {
+  background: var(--bg-input);
+  border: 1px solid var(--border-rack);
+  padding: 5px 10px;
+  border-radius: 6px;
+  display: flex;
+  flex-direction: column;
+}
+
+.sample-rate-badge .label {
+  font-size: 0.65rem;
+  color: var(--text-muted);
+  letter-spacing: 0.6px;
+}
+
+.sample-rate-badge strong {
+  font-family: var(--font-mono);
+  font-size: 0.85rem;
+  color: var(--accent-cyan);
+}
+
+.master-fader-box {
+  background: var(--bg-input);
+  border: 1px solid var(--border-rack);
+  padding: 5px 12px;
+  border-radius: 6px;
+  display: flex;
+  flex-direction: column;
+  min-width: 195px;
+}
+
+.master-fader-box label {
+  font-size: 0.7rem;
+  color: var(--text-muted);
+  display: flex;
+  justify-content: space-between;
+}
+
+.master-fader-box label span {
+  color: var(--accent-amber);
+  font-family: var(--font-mono);
+  font-weight: 700;
+}
+
+/* Navigation Tabs */
+.mode-tabs {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.tab-btn {
+  flex: 1;
+  min-width: 240px;
+  background: var(--bg-rack);
+  color: var(--text-muted);
+  border: 1px solid var(--border-rack);
+  padding: 11px 16px;
+  border-radius: 8px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  transition: all 0.2s ease;
+}
+
+.tab-btn:hover {
+  border-color: var(--border-highlight);
+  color: var(--text-main);
+}
+
+.tab-btn.active {
+  background: linear-gradient(180deg, #1f2b42 0%, #162032 100%);
+  color: var(--accent-cyan);
+  border-color: var(--accent-cyan);
+  box-shadow: 0 0 14px rgba(0, 212, 255, 0.15);
+}
+
+/* Visualizer Rack */
+.visualizer-rack {
+  background: var(--bg-rack);
+  border: 1px solid var(--border-rack);
+  border-radius: 10px;
+  padding: 12px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.vis-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.readout-group {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.digital-readout {
+  background: var(--bg-input);
+  border: 1px solid var(--border-rack);
+  border-radius: 7px;
+  padding: 6px 12px;
+  min-width: 145px;
+  display: flex;
+  flex-direction: column;
+}
+
+.readout-label {
+  font-size: 0.65rem;
+  color: var(--text-muted);
+  letter-spacing: 0.7px;
+  text-transform: uppercase;
+}
+
+.readout-value {
+  font-family: var(--font-mono);
+  font-size: 1.35rem;
+  font-weight: 700;
+  color: var(--accent-cyan);
+}
+
+.readout-value small {
+  font-size: 0.85rem;
+  color: var(--text-muted);
+}
+
+.readout-value.secondary {
+  font-size: 1.05rem;
+  color: var(--text-main);
+}
+
+.readout-value.band-badge {
+  font-size: 0.95rem;
+  color: var(--accent-amber);
+}
+
+.channel-selector {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.segmented-control {
+  display: inline-flex;
+  background: var(--bg-input);
+  border: 1px solid var(--border-rack);
+  border-radius: 7px;
+  overflow: hidden;
+}
+
+.segmented-control button {
+  background: transparent;
+  color: var(--text-muted);
+  border: none;
+  padding: 7px 14px;
+  font-size: 0.82rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.segmented-control button.active {
+  background: var(--accent-cyan);
+  color: #061018;
+}
+
+.canvas-wrapper {
+  position: relative;
+  background: #070a0f;
+  border: 1px solid #222c3c;
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+#spectrumCanvas {
+  width: 100%;
+  height: 155px;
+  display: block;
+}
+
+.band-legend {
+  display: flex;
+  border-top: 1px solid #1a2230;
+  background: #0d121a;
+  font-size: 0.68rem;
+  font-family: var(--font-mono);
+  color: var(--text-muted);
+  text-align: center;
+}
+
+.band-legend span {
+  padding: 4px 2px;
+  border-right: 1px solid #1c2536;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.band-legend span:last-child {
+  border-right: none;
+}
+
+/* Main Tab Layouts */
+.tab-content {
+  display: none;
+}
+
+.tab-content.active {
+  display: block;
+}
+
+.grid-two-cols {
+  display: grid;
+  grid-template-columns: 1.15fr 0.85fr;
+  gap: 14px;
+}
+
+.grid-audiogram {
+  display: grid;
+  grid-template-columns: 1.25fr 0.75fr;
+  gap: 14px;
+}
+
+@media (max-width: 1024px) {
+  .grid-two-cols,
+  .grid-audiogram {
+    grid-template-columns: 1fr;
+  }
+}
+
+.rack-module {
+  background: var(--bg-rack);
+  border: 1px solid var(--border-rack);
+  border-radius: 10px;
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.module-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 1px solid var(--border-rack);
+  padding-bottom: 10px;
+}
+
+.module-header h2 {
+  font-size: 1.02rem;
+  font-weight: 700;
+}
+
+.badge {
+  background: rgba(0, 212, 255, 0.12);
+  color: var(--accent-cyan);
+  border: 1px solid rgba(0, 212, 255, 0.35);
+  font-size: 0.74rem;
+  padding: 3px 9px;
+  border-radius: 99px;
+  font-family: var(--font-mono);
+}
+
+/* Sliders & Controls */
+.freq-slider-container {
+  background: var(--bg-panel);
+  border: 1px solid var(--border-rack);
+  border-radius: 8px;
+  padding: 12px 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.slider-top-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+  font-size: 0.82rem;
+  color: var(--text-muted);
+}
+
+.fine-step-btns {
+  display: flex;
+  gap: 4px;
+}
+
+.btn-mini {
+  background: var(--bg-input);
+  color: var(--text-main);
+  border: 1px solid var(--border-rack);
+  border-radius: 5px;
+  padding: 4px 8px;
+  font-size: 0.74rem;
+  font-family: var(--font-mono);
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.btn-mini:hover {
+  border-color: var(--accent-cyan);
+  color: var(--accent-cyan);
+}
+
+.studio-slider {
+  width: 100%;
+  accent-color: var(--accent-cyan);
+  height: 8px;
+  cursor: pointer;
+}
+
+.slider-ticks {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.68rem;
+  font-family: var(--font-mono);
+  color: var(--text-muted);
+}
+
+.controls-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+.control-field {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.control-field label {
+  font-size: 0.76rem;
+  color: var(--text-muted);
+}
+
+.control-field select {
+  background: var(--bg-input);
+  color: var(--text-main);
+  border: 1px solid var(--border-rack);
+  border-radius: 6px;
+  padding: 8px 10px;
+  font-size: 0.85rem;
+}
+
+/* Action Buttons */
+.action-buttons-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+}
+
+.action-buttons-grid .btn-large {
+  grid-column: span 3;
+}
+
+.btn {
+  border: 1px solid transparent;
+  border-radius: 7px;
+  padding: 10px 14px;
+  font-size: 0.86rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.18s ease;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+}
+
+.btn-primary {
+  background: linear-gradient(180deg, #00d4ff 0%, #0098cc 100%);
+  color: #041019;
+}
+
+.btn-primary.playing {
+  background: linear-gradient(180deg, #18e299 0%, #0ca66d 100%);
+  box-shadow: 0 0 16px rgba(24, 226, 153, 0.35);
+}
+
+.btn-accent {
+  background: #1d283a;
+  color: var(--accent-cyan);
+  border-color: #2e405c;
+}
+
+.btn-accent:hover,
+.btn-secondary:hover {
+  border-color: var(--accent-cyan);
+}
+
+.btn-secondary {
+  background: var(--bg-panel);
+  color: var(--text-main);
+  border-color: var(--border-rack);
+}
+
+.btn-danger {
+  background: rgba(255, 77, 106, 0.15);
+  color: var(--accent-red);
+  border-color: rgba(255, 77, 106, 0.45);
+  padding: 8px 12px;
+  font-size: 0.78rem;
+}
+
+.btn-danger:hover {
+  background: var(--accent-red);
+  color: #fff;
+}
+
+.capture-bar {
+  background: rgba(255, 170, 0, 0.06);
+  border: 1px solid rgba(255, 170, 0, 0.25);
+  border-radius: 8px;
+  padding: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.capture-hint {
+  font-size: 0.8rem;
+  color: var(--text-muted);
+}
+
+kbd {
+  background: var(--bg-input);
+  border: 1px solid var(--border-highlight);
+  border-radius: 4px;
+  padding: 1px 5px;
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  color: var(--accent-amber);
+}
+
+.capture-btns {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+
+.btn-capture {
+  background: linear-gradient(180deg, #2b2312 0%, #1f190c 100%);
+  color: var(--accent-amber);
+  border: 1px solid rgba(255, 170, 0, 0.45);
+}
+
+.btn-capture:hover {
+  background: var(--accent-amber);
+  color: #120e04;
+}
+
+/* Ear Result Cards */
+.ear-cards {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.ear-result-card {
+  background: var(--bg-panel);
+  border: 1px solid var(--border-rack);
+  border-radius: 8px;
+  padding: 11px 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.ear-result-card.active-card {
+  border-color: var(--accent-cyan);
+}
+
+.ear-card-title {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 0.84rem;
+}
+
+.ear-span-badge {
+  font-family: var(--font-mono);
+  font-size: 0.76rem;
+  color: var(--accent-green);
+}
+
+.ear-metrics {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+}
+
+.metric-box {
+  background: var(--bg-input);
+  border: 1px solid #222b3d;
+  border-radius: 6px;
+  padding: 6px 8px;
+  display: flex;
+  flex-direction: column;
+}
+
+.m-label {
+  font-size: 0.68rem;
+  color: var(--text-muted);
+}
+
+.m-val {
+  font-family: var(--font-mono);
+  font-size: 0.95rem;
+  font-weight: 700;
+}
+
+.m-val.highlight {
+  color: var(--accent-cyan);
+}
+
+.range-bar-track {
+  height: 7px;
+  background: var(--bg-input);
+  border-radius: 99px;
+  position: relative;
+  overflow: hidden;
+}
+
+.range-bar-fill {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 0%;
+  width: 0%;
+  background: linear-gradient(90deg, var(--accent-cyan), var(--accent-green));
+  border-radius: 99px;
+  transition: all 0.25s ease;
+}
+
+.range-bar-fill.ear-l {
+  background: var(--ear-left);
+}
+
+.range-bar-fill.ear-r {
+  background: var(--ear-right);
+}
+
+.quick-presets {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.preset-label {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+}
+
+.preset-pills {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.preset-pills button {
+  background: var(--bg-input);
+  color: var(--text-main);
+  border: 1px solid var(--border-rack);
+  border-radius: 5px;
+  padding: 5px 9px;
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  cursor: pointer;
+}
+
+.preset-pills button:hover {
+  border-color: var(--accent-cyan);
+  color: var(--accent-cyan);
+}
+
+/* Audiogram Tab */
+.module-desc {
+  font-size: 0.83rem;
+  color: var(--text-muted);
+}
+
+.audiogram-canvas-box {
+  background: #070a0f;
+  border: 1px solid var(--border-rack);
+  border-radius: 8px;
+  padding: 8px;
+}
+
+#audiogramCanvas {
+  width: 100%;
+  height: 320px;
+  display: block;
+}
+
+.audiogram-freq-grid {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 6px;
+}
+
+.ag-freq-btn {
+  background: var(--bg-input);
+  color: var(--text-muted);
+  border: 1px solid var(--border-rack);
+  border-radius: 6px;
+  padding: 7px 4px;
+  font-family: var(--font-mono);
+  font-size: 0.76rem;
+  cursor: pointer;
+  text-align: center;
+}
+
+.ag-freq-btn.active {
+  border-color: var(--accent-cyan);
+  color: var(--accent-cyan);
+  background: rgba(0, 212, 255, 0.1);
+}
+
+.ag-freq-btn.done {
+  border-color: rgba(24, 226, 153, 0.5);
+  color: var(--accent-green);
+}
+
+.threshold-tester-box {
+  background: var(--bg-panel);
+  border: 1px solid var(--border-rack);
+  border-radius: 8px;
+  padding: 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.tester-status {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+  background: var(--bg-input);
+  padding: 10px;
+  border-radius: 6px;
+}
+
+.small-label {
+  display: block;
+  font-size: 0.65rem;
+  color: var(--text-muted);
+}
+
+.big-val {
+  font-family: var(--font-mono);
+  font-size: 0.98rem;
+}
+
+.big-val.accent {
+  color: var(--accent-amber);
+}
+
+.ag-ear-switch {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+
+.btn-ear {
+  background: var(--bg-input);
+  color: var(--text-muted);
+  border: 1px solid var(--border-rack);
+}
+
+.btn-ear.active[data-ag-ear="L"] {
+  border-color: var(--ear-left);
+  color: var(--ear-left);
+  background: rgba(56, 189, 248, 0.12);
+}
+
+.btn-ear.active[data-ag-ear="R"] {
+  border-color: var(--ear-right);
+  color: var(--ear-right);
+  background: rgba(251, 113, 133, 0.12);
+}
+
+.ag-level-control {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  font-size: 0.8rem;
+}
+
+.ag-slider-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.ag-actions {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+
+/* Report Tab */
+.report-summary-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 12px;
+}
+
+@media (max-width: 900px) {
+  .report-summary-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+.summary-stat {
+  background: var(--bg-panel);
+  border: 1px solid var(--border-rack);
+  border-radius: 8px;
+  padding: 12px 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.summary-stat .s-title {
+  font-size: 0.72rem;
+  color: var(--text-muted);
+  text-transform: uppercase;
+}
+
+.summary-stat .s-value {
+  font-family: var(--font-mono);
+  font-size: 1.25rem;
+  font-weight: 800;
+  color: var(--accent-cyan);
+}
+
+.summary-stat .s-sub {
+  font-size: 0.76rem;
+  color: var(--text-muted);
+}
+
+.report-card {
+  background: var(--bg-panel);
+  border: 1px solid var(--border-rack);
+  border-radius: 8px;
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.report-card h3 {
+  font-size: 0.96rem;
+  color: var(--accent-cyan);
+}
+
+.report-card h4 {
+  font-size: 0.86rem;
+  color: var(--text-main);
+}
+
+.advice-list {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.advice-list li {
+  background: var(--bg-input);
+  border-left: 3px solid var(--accent-cyan);
+  padding: 10px 12px;
+  border-radius: 0 6px 6px 0;
+  font-size: 0.84rem;
+}
+
+.advice-list li.warn {
+  border-left-color: var(--accent-amber);
+}
+
+.advice-list li.good {
+  border-left-color: var(--accent-green);
+}
+
+.divider {
+  border: none;
+  border-top: 1px solid var(--border-rack);
+  margin: 4px 0;
+}
+
+.studio-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.78rem;
+}
+
+.studio-table th,
+.studio-table td {
+  border: 1px solid var(--border-rack);
+  padding: 7px 9px;
+  text-align: left;
+}
+
+.studio-table th {
+  background: var(--bg-input);
+  color: var(--text-muted);
+}
+
+/* Ear Training Quiz Tab */
+.quiz-mystery-deck {
+  background: var(--bg-panel);
+  border: 1px solid var(--border-rack);
+  border-radius: 8px;
+  padding: 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.mystery-display {
+  background: var(--bg-input);
+  border: 1px dashed var(--border-highlight);
+  border-radius: 8px;
+  padding: 14px;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.mystery-label {
+  font-size: 0.7rem;
+  color: var(--text-muted);
+  letter-spacing: 1px;
+}
+
+.mystery-value {
+  font-family: var(--font-mono);
+  font-size: 1.8rem;
+  color: var(--accent-amber);
+}
+
+.mystery-display.revealed .mystery-value {
+  color: var(--accent-green);
+}
+
+.mystery-sub {
+  font-size: 0.8rem;
+  color: var(--text-muted);
+}
+
+.quiz-Audio-btns {
+  display: grid;
+  grid-template-columns: 1.4fr 1fr 1fr;
+  gap: 8px;
+}
+
+@media (max-width: 720px) {
+  .quiz-Audio-btns {
+    grid-template-columns: 1fr;
+  }
+}
+
+.quiz-choices-box {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.quiz-options-grid {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 8px;
+}
+
+@media (max-width: 680px) {
+  .quiz-options-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+.quiz-opt-btn {
+  background: var(--bg-panel);
+  color: var(--text-main);
+  border: 1px solid var(--border-rack);
+  border-radius: 7px;
+  padding: 12px 6px;
+  font-family: var(--font-mono);
+  font-size: 0.88rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 3px;
+}
+
+.quiz-opt-btn small {
+  font-size: 0.65rem;
+  font-weight: 400;
+  color: var(--text-muted);
+}
+
+.quiz-opt-btn:hover:not(:disabled) {
+  border-color: var(--accent-cyan);
+  color: var(--accent-cyan);
+  transform: translateY(-1px);
+}
+
+.quiz-opt-btn.correct {
+  background: rgba(24, 226, 153, 0.18);
+  border-color: var(--accent-green);
+  color: var(--accent-green);
+}
+
+.quiz-opt-btn.wrong {
+  background: rgba(255, 77, 106, 0.18);
+  border-color: var(--accent-red);
+  color: var(--accent-red);
+}
+
+.quiz-feedback-banner {
+  background: var(--bg-input);
+  border-left: 4px solid var(--accent-cyan);
+  padding: 11px 14px;
+  border-radius: 0 7px 7px 0;
+  font-size: 0.85rem;
+}
+
+.quiz-feedback-banner.good {
+  border-left-color: var(--accent-green);
+}
+
+.quiz-feedback-banner.warn {
+  border-left-color: var(--accent-amber);
+}
+
+.quiz-feedback-banner.bad {
+  border-left-color: var(--accent-red);
+}
+
+.quiz-score-cards {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 8px;
+}
+
+.quiz-history-wrapper {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  max-height: 360px;
+  overflow-y: auto;
+}
+
+
+</style>
+</head>
+<body>
+  <div class="app-shell">
+    <!-- Top Studio Header -->
+    <header class="studio-header">
+      <div class="brand">
+        <div class="logo-led" id="audioStatusLed" title="Статус аудіо-рушія"></div>
+        <div>
+          <h1>SONIC<span>RANGE</span> PRO</h1>
+          <p class="subtitle">Лабораторія вимірювання частотного діапазону та АЧХ слуху звукорежисера</p>
+        </div>
+      </div>
+
+      <div class="header-meters">
+        <button class="btn btn-accent" id="installPwaBtn" style="display: none;" title="Встановити як окремий додаток на комп'ютер або смартфон">
+          📲 ВСТАНОВИТИ ДОДАТОК
+        </button>
+        <div class="sample-rate-badge">
+          <span class="label">SAMPLE RATE</span>
+          <strong id="sampleRateDisplay">— Hz</strong>
+        </div>
+        <div class="sample-rate-badge">
+          <span class="label">NYQUIST LIMIT</span>
+          <strong id="nyquistDisplay">— Hz</strong>
+        </div>
+        <div class="master-fader-box">
+          <label for="masterGainSlider">MASTER LEVEL: <span id="masterGainValue">-18 dBFS</span></label>
+          <input type="range" id="masterGainSlider" min="-60" max="-3" step="0.5" value="-18" />
+        </div>
+        <button class="btn btn-danger" id="panicStopBtn" title="Миттєво вимкнути звук (Esc)">
+          ⏹ PANIC MUTE (ESC)
+        </button>
+      </div>
+    </header>
+
+    <!-- Navigation Tabs -->
+    <nav class="mode-tabs">
+      <button class="tab-btn active" data-tab="sweep">
+        <span class="tab-icon">〰️</span>
+        1. Діапазон частот (Sweep)
+      </button>
+      <button class="tab-btn" data-tab="audiogram">
+        <span class="tab-icon">📊</span>
+        2. Студійна Аудіограма (L/R)
+      </button>
+      <button class="tab-btn" data-tab="quiz">
+        <span class="tab-icon">🎓</span>
+        3. Вікторина: Вгадай частоту
+      </button>
+      <button class="tab-btn" data-tab="report">
+        <span class="tab-icon">🎚️</span>
+        4. Профіль & Звіт
+      </button>
+    </nav>
+
+    <!-- Real-time Spectrum & Oscilloscope Bar -->
+    <section class="visualizer-rack">
+      <div class="vis-header">
+        <div class="readout-group">
+          <div class="digital-readout">
+            <span class="readout-label">ЧАСТОТА</span>
+            <span class="readout-value" id="currentFreqReadout">1000.0 <small>Hz</small></span>
+          </div>
+          <div class="digital-readout">
+            <span class="readout-label">НОТА / ОКТАВА</span>
+            <span class="readout-value secondary" id="currentNoteReadout">B5 (+4¢)</span>
+          </div>
+          <div class="digital-readout">
+            <span class="readout-label">ДІАПАЗОН МІКСУ</span>
+            <span class="readout-value band-badge" id="currentBandReadout">MID (Середина)</span>
+          </div>
+          <div class="digital-readout">
+            <span class="readout-label">ДОВЖИНА ХВИЛІ (20°C)</span>
+            <span class="readout-value secondary" id="currentWavelengthReadout">34.3 см</span>
+          </div>
+        </div>
+
+        <div class="channel-selector">
+          <span class="readout-label">КАНАЛ МОНІТОРИНГУ:</span>
+          <div class="segmented-control" id="earSelector">
+            <button type="button" data-ear="L">🎧 L (Лівий)</button>
+            <button type="button" data-ear="both" class="active">🎧 L+R (Стерео)</button>
+            <button type="button" data-ear="R">🎧 R (Правий)</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="canvas-wrapper">
+        <canvas id="spectrumCanvas" width="1200" height="170"></canvas>
+        <div class="band-legend">
+          <span style="flex: 1.2">SUB-BASS (20–60Hz)</span>
+          <span style="flex: 1.3">BASS (60–250Hz)</span>
+          <span style="flex: 1">LOW MID (250–500Hz)</span>
+          <span style="flex: 1.4">MID (500–2kHz)</span>
+          <span style="flex: 1">UPPER MID (2k–4kHz)</span>
+          <span style="flex: 0.7">PRESENCE (4k–6kHz)</span>
+          <span style="flex: 1.6">BRILLIANCE / AIR (6k–20kHz+)</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- TAB 1: FREQUENCY RANGE & SWEEP TEST -->
+    <main class="tab-content active" id="tab-sweep">
+      <div class="grid-two-cols">
+        <!-- Left Panel: Generator & Sweep Controls -->
+        <div class="rack-module">
+          <div class="module-header">
+            <h2>🎛️ Генератор та Логарифмічний Свіп</h2>
+            <span class="badge">Чистий синус / Warble</span>
+          </div>
+
+          <div class="freq-slider-container">
+            <div class="slider-top-row">
+              <label for="freqLogSlider">Плавне регулювання частоти (15 Hz — 22 000 Hz)</label>
+              <div class="fine-step-btns">
+                <button type="button" class="btn-mini" data-step="-100">-100 Hz</button>
+                <button type="button" class="btn-mini" data-step="-10">-10 Hz</button>
+                <button type="button" class="btn-mini" data-step="-1">-1 Hz</button>
+                <button type="button" class="btn-mini" data-step="1">+1 Hz</button>
+                <button type="button" class="btn-mini" data-step="10">+10 Hz</button>
+                <button type="button" class="btn-mini" data-step="100">+100 Hz</button>
+              </div>
+            </div>
+            <input type="range" id="freqLogSlider" min="0" max="1000" step="0.1" value="567" class="studio-slider" />
+            <div class="slider-ticks">
+              <span>20 Hz</span>
+              <span>50 Hz</span>
+              <span>100 Hz</span>
+              <span>250 Hz</span>
+              <span>500 Hz</span>
+              <span>1 kHz</span>
+              <span>2 kHz</span>
+              <span>5 kHz</span>
+              <span>10 kHz</span>
+              <span>16 kHz</span>
+              <span>22 kHz</span>
+            </div>
+          </div>
+
+          <div class="controls-row">
+            <div class="control-field">
+              <label>Тип сигналу</label>
+              <select id="toneModeSelect">
+                <option value="sine">Pure Sine (Чистий синус — стандарт)</option>
+                <option value="warble">Warble Tone (FM ±5% — для моніторів у кімнаті)</option>
+                <option value="pulsed">Pulsed Sine (Пульсуючий 2.5 Гц — легше помітити поріг)</option>
+              </select>
+            </div>
+            <div class="control-field">
+              <label>Швидкість авто-свіпу</label>
+              <select id="sweepSpeedSelect">
+                <option value="slow">Повільна (Точний вимір — 35 сек)</option>
+                <option value="medium" selected>Середня (Стандартна — 20 сек)</option>
+                <option value="fast">Швидка (Оглядова — 10 сек)</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="action-buttons-grid">
+            <button type="button" class="btn btn-primary btn-large" id="toggleToneBtn">
+              ▶ УВІМКНУТИ ТОН-ГЕНЕРАТОР
+            </button>
+            <button type="button" class="btn btn-accent" id="startLowSweepBtn">
+              📉 Тест НЧ (120 Hz → 15 Hz)
+            </button>
+            <button type="button" class="btn btn-accent" id="startHighSweepBtn">
+              📈 Тест ВЧ (8 kHz → 22 kHz)
+            </button>
+            <button type="button" class="btn btn-secondary" id="startFullSweepBtn">
+              🔄 Повний свіп (20 Hz → 22 kHz)
+            </button>
+          </div>
+
+          <div class="capture-bar">
+            <div class="capture-hint">
+              💡 <strong>Як фіксувати межі:</strong> Під час свіпу або ручного руху повзунка натисніть кнопку нижче (або клавіші <kbd>L</kbd> / <kbd>H</kbd> / <kbd>Space</kbd>), щойно звук з’явиться чи зникне.
+            </div>
+            <div class="capture-btns">
+              <button type="button" class="btn btn-capture" id="markLowLimitBtn">
+                📍 Зафіксувати НИЖНЮ межу (НЧ) <kbd>L</kbd>
+              </button>
+              <button type="button" class="btn btn-capture" id="markHighLimitBtn">
+                📍 Зафіксувати ВЕРХНЮ межу (ВЧ) <kbd>H</kbd>
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Right Panel: Measured Range Results per Ear -->
+        <div class="rack-module">
+          <div class="module-header">
+            <h2>🎯 Зафіксований діапазон чутності</h2>
+            <button type="button" class="btn-mini" id="resetLimitsBtn">Скинути заміри</button>
+          </div>
+
+          <div class="ear-cards">
+            <!-- Stereo Card -->
+            <div class="ear-result-card active-card" data-card-ear="both">
+              <div class="ear-card-title">
+                <strong>🎧 СТЕРЕО (L+R)</strong>
+                <span class="ear-span-badge" id="spanOctaves-both">— октав</span>
+              </div>
+              <div class="ear-metrics">
+                <div class="metric-box">
+                  <span class="m-label">Нижній поріг (Sub)</span>
+                  <span class="m-val" id="lowLimit-both">— Hz</span>
+                </div>
+                <div class="metric-box">
+                  <span class="m-label">Верхній поріг (Air)</span>
+                  <span class="m-val" id="highLimit-both">— Hz</span>
+                </div>
+                <div class="metric-box">
+                  <span class="m-label">Смуга пропускання</span>
+                  <span class="m-val highlight" id="bandwidth-both">— Hz</span>
+                </div>
+              </div>
+              <div class="range-bar-track">
+                <div class="range-bar-fill" id="rangeBar-both"></div>
+              </div>
+            </div>
+
+            <!-- Left Ear Card -->
+            <div class="ear-result-card" data-card-ear="L">
+              <div class="ear-card-title">
+                <strong>◀ ЛІВЕ ВУХО (L)</strong>
+                <span class="ear-span-badge" id="spanOctaves-L">— октав</span>
+              </div>
+              <div class="ear-metrics">
+                <div class="metric-box">
+                  <span class="m-label">Нижній поріг (Sub)</span>
+                  <span class="m-val" id="lowLimit-L">— Hz</span>
+                </div>
+                <div class="metric-box">
+                  <span class="m-label">Верхній поріг (Air)</span>
+                  <span class="m-val" id="highLimit-L">— Hz</span>
+                </div>
+                <div class="metric-box">
+                  <span class="m-label">Смуга пропускання</span>
+                  <span class="m-val highlight" id="bandwidth-L">— Hz</span>
+                </div>
+              </div>
+              <div class="range-bar-track">
+                <div class="range-bar-fill ear-l" id="rangeBar-L"></div>
+              </div>
+            </div>
+
+            <!-- Right Ear Card -->
+            <div class="ear-result-card" data-card-ear="R">
+              <div class="ear-card-title">
+                <strong>▶ ПРАВЕ ВУХО (R)</strong>
+                <span class="ear-span-badge" id="spanOctaves-R">— октав</span>
+              </div>
+              <div class="ear-metrics">
+                <div class="metric-box">
+                  <span class="m-label">Нижній поріг (Sub)</span>
+                  <span class="m-val" id="lowLimit-R">— Hz</span>
+                </div>
+                <div class="metric-box">
+                  <span class="m-label">Верхній поріг (Air)</span>
+                  <span class="m-val" id="highLimit-R">— Hz</span>
+                </div>
+                <div class="metric-box">
+                  <span class="m-label">Смуга пропускання</span>
+                  <span class="m-val highlight" id="bandwidth-R">— Hz</span>
+                </div>
+              </div>
+              <div class="range-bar-track">
+                <div class="range-bar-fill ear-r" id="rangeBar-R"></div>
+              </div>
+            </div>
+          </div>
+
+          <div class="quick-presets">
+            <span class="preset-label">Швидка перевірка контрольних частот:</span>
+            <div class="preset-pills" id="quickFreqPills">
+              <button type="button" data-freq="20">20 Hz</button>
+              <button type="button" data-freq="30">30 Hz</button>
+              <button type="button" data-freq="60">60 Hz</button>
+              <button type="button" data-freq="125">125 Hz</button>
+              <button type="button" data-freq="440">440 Hz</button>
+              <button type="button" data-freq="1000">1 kHz</button>
+              <button type="button" data-freq="4000">4 kHz</button>
+              <button type="button" data-freq="10000">10 kHz</button>
+              <button type="button" data-freq="14000">14 kHz</button>
+              <button type="button" data-freq="16000">16 kHz</button>
+              <button type="button" data-freq="18000">18 kHz</button>
+              <button type="button" data-freq="20000">20 kHz</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </main>
+
+    <!-- TAB 2: STUDIO AUDIOGRAM (THRESHOLD PER FREQUENCY) -->
+    <main class="tab-content" id="tab-audiogram">
+      <div class="grid-audiogram">
+        <div class="rack-module">
+          <div class="module-header">
+            <h2>📊 Побудова АЧХ чутливості слуху (Ліве та Праве вухо)</h2>
+            <div class="header-actions">
+              <button type="button" class="btn-mini" id="loadDemoAudiogramBtn">Завантажити приклад заміру</button>
+              <button type="button" class="btn-mini" id="clearAudiogramBtn">Очистити графік</button>
+            </div>
+          </div>
+
+          <p class="module-desc">
+            Для звукорежисера важливо знати не лише крайні межі (Гц), а й <strong>рівномірність чутності між Лівим і Правим вухом</strong> у ключових смугах еквалайзера. Оберіть частоту, плавно піднімайте рівень з <code>-75 dBFS</code> до моменту, коли ледь почуєте пульсуючий тон, і натисніть <strong>«Записати поріг»</strong>.
+          </p>
+
+          <div class="audiogram-canvas-box">
+            <canvas id="audiogramCanvas" width="820" height="340"></canvas>
+          </div>
+        </div>
+
+        <div class="rack-module">
+          <div class="module-header">
+            <h2>🎚️ Покроковий вимір порогу</h2>
+            <span class="badge" id="audiogramStepBadge">Частота 7 / 15</span>
+          </div>
+
+          <div class="audiogram-freq-grid" id="audiogramFreqButtons">
+            <!-- Populated by JS -->
+          </div>
+
+          <div class="threshold-tester-box">
+            <div class="tester-status">
+              <div>
+                <span class="small-label">АКТИВНА ЧАСТОТА</span>
+                <strong class="big-val" id="agActiveFreq">1000 Hz</strong>
+              </div>
+              <div>
+                <span class="small-label">КАНАЛ</span>
+                <strong class="big-val" id="agActiveEar">🎧 Ліве вухо (L)</strong>
+              </div>
+              <div>
+                <span class="small-label">РІВЕНЬ ТЕСТУ</span>
+                <strong class="big-val accent" id="agCurrentDb">-50 dBFS</strong>
+              </div>
+            </div>
+
+            <div class="ag-ear-switch">
+              <button type="button" class="btn btn-ear active" data-ag-ear="L">Вимірювати Ліве вухо (L)</button>
+              <button type="button" class="btn btn-ear" data-ag-ear="R">Вимірювати Праве вухо (R)</button>
+            </div>
+
+            <div class="ag-level-control">
+              <label for="agLevelSlider">Рівень тестового тону (піднімайте до ледь чутного звуку):</label>
+              <div class="ag-slider-row">
+                <button type="button" class="btn-mini" id="agDbDownBtn">-2 dB</button>
+                <input type="range" id="agLevelSlider" min="-80" max="-5" step="1" value="-50" class="studio-slider" />
+                <button type="button" class="btn-mini" id="agDbUpBtn">+2 dB</button>
+              </div>
+            </div>
+
+            <div class="ag-actions">
+              <button type="button" class="btn btn-primary" id="agPlayToneBtn">
+                ▶ Прослухати пульс-тон
+              </button>
+              <button type="button" class="btn btn-capture" id="agRecordPointBtn">
+                ✅ Записати поріг та далі →
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </main>
+
+    <!-- TAB 3: EAR TRAINING FREQUENCY QUIZ FOR STUDENTS -->
+    <main class="tab-content" id="tab-quiz">
+      <div class="grid-two-cols">
+        <!-- Left Column: Interactive Quiz Console -->
+        <div class="rack-module">
+          <div class="module-header">
+            <h2>🎓 Тренажер-Вікторина: Вгадай частоту на слух</h2>
+            <span class="badge" id="quizRoundBadge">Раунд 1 / 10</span>
+          </div>
+
+          <div class="controls-row">
+            <div class="control-field">
+              <label for="quizDifficultySelect">Рівень складності</label>
+              <select id="quizDifficultySelect">
+                <option value="beginner">Початковий (9 октавних частот ISO: 63 Hz – 16 kHz)</option>
+                <option value="intermediate" selected>Середній (15 студійних смуг EQ: 31.5 Hz – 16 kHz)</option>
+                <option value="pro">Експерт (Довільна частота + точний пошук повзунком)</option>
+              </select>
+            </div>
+            <div class="control-field">
+              <label for="quizTimbreSelect">Тип тестового сигналу</label>
+              <select id="quizTimbreSelect">
+                <option value="sine">Чистий синус (Pure Sine)</option>
+                <option value="pulsed">Пульсуючий тон (Pulsed Sine)</option>
+                <option value="warble">Warble Tone (Частотно-модульований)</option>
+              </select>
+            </div>
+          </div>
+
+          <!-- Mystery Tone Playback Deck -->
+          <div class="quiz-mystery-deck">
+            <div class="mystery-display" id="quizMysteryDisplay">
+              <span class="mystery-label">ЗАГАДАНА ЧАСТОТА</span>
+              <strong class="mystery-value" id="quizSecretFreqText">??? Hz</strong>
+              <span class="mystery-sub" id="quizSecretHintText">Натисніть «Слухати загаданий тон» та оберіть відповідь</span>
+            </div>
+
+            <div class="quiz-Audio-btns">
+              <button type="button" class="btn btn-primary btn-large" id="quizPlayMysteryBtn">
+                🔊 СЛУХАТИ ЗАГАДАНИЙ ТОН
+              </button>
+              <button type="button" class="btn btn-secondary" id="quizPlayRefBtn" title="Увімкнути еталонний тон 1000 Hz для порівняння">
+                🔔 Еталон 1 kHz (Референс)
+              </button>
+              <button type="button" class="btn btn-accent" id="quizNextQuestionBtn">
+                ⏭ Наступне питання →
+              </button>
+            </div>
+          </div>
+
+          <!-- Multiple-Choice Frequency Grid (for Beginner & Intermediate) -->
+          <div id="quizChoicesContainer" class="quiz-choices-box">
+            <span class="preset-label">Оберіть частоту, яка зараз звучить:</span>
+            <div class="quiz-options-grid" id="quizOptionsGrid">
+              <!-- Populated by JS -->
+            </div>
+          </div>
+
+          <!-- Pro Slider Guess Mode (for Expert mode or fine-tuning) -->
+          <div id="quizProSliderContainer" class="freq-slider-container" style="display: none;">
+            <div class="slider-top-row">
+              <label for="quizGuessSlider">Ваша відповідь на шкалі: <strong id="quizSliderReadout" style="color:var(--accent-cyan)">1000 Hz</strong></label>
+              <button type="button" class="btn btn-capture" id="quizSubmitSliderBtn">
+                ✅ Підтвердити відповідь
+              </button>
+            </div>
+            <input type="range" id="quizGuessSlider" min="0" max="1000" step="1" value="567" class="studio-slider" />
+            <div class="slider-ticks">
+              <span>30 Hz</span>
+              <span>100 Hz</span>
+              <span>250 Hz</span>
+              <span>500 Hz</span>
+              <span>1 kHz</span>
+              <span>2 kHz</span>
+              <span>4 kHz</span>
+              <span>8 kHz</span>
+              <span>16 kHz</span>
+            </div>
+          </div>
+
+          <!-- Feedback Banner -->
+          <div class="quiz-feedback-banner" id="quizFeedbackBanner">
+            Оберіть рівень складності та натисніть <strong>«Слухати загаданий тон»</strong>, щоб розпочати тренування слуху.
+          </div>
+        </div>
+
+        <!-- Right Column: Student Scoreboard & Attempt History -->
+        <div class="rack-module">
+          <div class="module-header">
+            <h2>🏆 Результати студента та статистика</h2>
+            <button type="button" class="btn-mini" id="quizResetBtn">🔄 Почати нову серію (10 питань)</button>
+          </div>
+
+          <div class="quiz-score-cards">
+            <div class="metric-box">
+              <span class="m-label">Рахунок (Бали)</span>
+              <span class="m-val highlight" id="quizTotalScore">0 / 1000</span>
+            </div>
+            <div class="metric-box">
+              <span class="m-label">Серія влучань (Streak)</span>
+              <span class="m-val" id="quizStreakVal">0 🔥</span>
+            </div>
+            <div class="metric-box">
+              <span class="m-label">Середня точність</span>
+              <span class="m-val" id="quizAccuracyVal">— %</span>
+            </div>
+            <div class="metric-box">
+              <span class="m-label">Оцінка звукорежисера</span>
+              <span class="m-val" id="quizGradeVal">—</span>
+            </div>
+          </div>
+
+          <div class="quiz-history-wrapper">
+            <h4>Журнал відповідей поточної серії:</h4>
+            <table class="studio-table" id="quizHistoryTable">
+              <thead>
+                <tr>
+                  <th>#</th>
+                  <th>Загадано</th>
+                  <th>Відповідь</th>
+                  <th>Похибка (Октави)</th>
+                  <th>Бали</th>
+                </tr>
+              </thead>
+              <tbody id="quizHistoryBody">
+                <tr>
+                  <td colspan="5" style="text-align:center; color:var(--text-muted);">Ще немає відповідей у цій серії</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </main>
+
+    <!-- TAB 4: SOUND ENGINEER PROFILE & MIXING ADVICE -->
+    <main class="tab-content" id="tab-report">
+      <div class="rack-module">
+        <div class="module-header">
+          <h2>🎚️ Аналітичний звіт для звукорежисера</h2>
+          <div class="header-actions">
+            <button type="button" class="btn btn-secondary" id="exportJsonBtn">💾 Експорт JSON-профілю</button>
+            <button type="button" class="btn btn-primary" id="printReportBtn">🖨️ Друк / PDF Звіт</button>
+          </div>
+        </div>
+
+        <div class="report-summary-grid" id="reportSummaryGrid">
+          <!-- Populated dynamically by JS -->
+        </div>
+
+        <div class="grid-two-cols report-details">
+          <div class="report-card">
+            <h3>🔍 Вплив вашого діапазону на зведення та мастеринг</h3>
+            <ul class="advice-list" id="engineeringAdviceList">
+              <!-- Populated by JS -->
+            </ul>
+          </div>
+
+          <div class="report-card">
+            <h3>⚖️ Аналіз L/R симетрії та акустичний калькулятор</h3>
+            <div id="asymmetryReportBox"></div>
+            <hr class="divider" />
+            <h4>Довідник частотних зон та вікових норм ISO 7029</h4>
+            <table class="studio-table">
+              <thead>
+                <tr>
+                  <th>Категорія / Досвід</th>
+                  <th>Типовий верхній поріг ВЧ</th>
+                  <th>Особливості моніторингу</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>Еталонний діапазон (до 20 років)</td>
+                  <td>18 500 – 20 000 Hz</td>
+                  <td>Повний контроль Air-діапазону та ультрависоких гармонік</td>
+                </tr>
+                <tr>
+                  <td>Активний студійний інженер (25–35 років)</td>
+                  <td>15 500 – 17 800 Hz</td>
+                  <td>Повний контроль присутності та сибілянтів, Air >17kHz за аналізатором</td>
+                </tr>
+                <tr>
+                  <td>Досвідчений продюсер / інженер (35–50 років)</td>
+                  <td>13 500 – 15 500 Hz</td>
+                  <td>Висока чутливість до середньочастотного балансу; контроль ВЧ-полиць через Voxengo SPAN / FabFilter Pro-Q</td>
+                </tr>
+                <tr>
+                  <td>Ветеран індустрії (50+ років)</td>
+                  <td>11 000 – 13 500 Hz</td>
+                  <td>Фокус на музичному груві та M/S балансі; обов'язковий візуальний контроль вище 12 кГц</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <script>
+/**
+ * SonicRange Pro — Studio Hearing Frequency Range & Audiogram Analyzer
+ * Built for Sound Engineers (Web Audio API)
+ */
+
+const MIN_FREQ = 15;
+const MAX_FREQ = 22000;
+const SPEED_OF_SOUND = 343; // m/s at 20°C
+
+const AUDIOGRAM_FREQS = [
+  20, 31.5, 63, 125, 250, 500, 1000, 2000, 4000, 6000, 8000, 10000, 12500, 16000, 20000
+];
+
+// Reference normal threshold curve approximation in dBFS (relative studio reference)
+const ISO_REF_CURVE = {
+  20: -18,
+  31.5: -28,
+  63: -40,
+  125: -50,
+  250: -58,
+  500: -64,
+  1000: -68,
+  2000: -70,
+  4000: -72,
+  6000: -66,
+  8000: -62,
+  10000: -58,
+  12500: -52,
+  16000: -40,
+  20000: -22
+};
+
+const QUIZ_POOLS = {
+  beginner: [63, 125, 250, 500, 1000, 2000, 4000, 8000, 16000],
+  intermediate: [31.5, 63, 100, 160, 250, 400, 630, 1000, 1600, 2500, 4000, 6300, 10000, 12500, 16000]
+};
+
+const state = {
+  audioCtx: null,
+  osc: null,
+  lfoOsc: null,
+  lfoGain: null,
+  pulseGain: null,
+  toneGain: null,
+  panner: null,
+  masterGain: null,
+  analyser: null,
+
+  activeTab: 'sweep',
+  isPlaying: false,
+  isSweeping: false,
+  sweepRafId: null,
+  pulseIntervalId: null,
+
+  currentFreq: 1000,
+  masterDb: -18,
+  currentEar: 'both', // 'L' | 'R' | 'both'
+  toneMode: 'sine',   // 'sine' | 'warble' | 'pulsed'
+
+  // Measured frequency limits per ear
+  limits: {
+    both: { low: null, high: null },
+    L: { low: null, high: null },
+    R: { low: null, high: null }
+  },
+
+  // Audiogram state
+  audiogram: {
+    activeFreqIndex: 6, // 1000 Hz default
+    activeEar: 'L',
+    currentDb: -50,
+    isPlayingAg: false,
+    points: {
+      L: {},
+      R: {}
+    }
+  },
+
+  // Ear Training Quiz state
+  quiz: {
+    difficulty: 'intermediate', // 'beginner' | 'intermediate' | 'pro'
+    timbre: 'sine',
+    round: 1,
+    maxRounds: 10,
+    secretFreq: 1000,
+    sliderGuessFreq: 1000,
+    revealed: false,
+    isPlayingMystery: false,
+    isPlayingRef: false,
+    score: 0,
+    streak: 0,
+    history: []
+  }
+};
+
+// Load saved state from localStorage if available
+function loadSavedState() {
+  try {
+    const raw = localStorage.getItem('sonicrange_pro_state_v1');
+    if (!raw) return;
+    const parsed = JSON.parse(raw);
+    if (parsed.limits) state.limits = parsed.limits;
+    if (parsed.audiogramPoints) state.audiogram.points = parsed.audiogramPoints;
+  } catch (e) {
+    console.warn('Could not load saved state:', e);
+  }
+}
+
+function saveState() {
+  try {
+    localStorage.setItem(
+      'sonicrange_pro_state_v1',
+      JSON.stringify({
+        limits: state.limits,
+        audiogramPoints: state.audiogram.points
+      })
+    );
+  } catch (e) {
+    // ignore storage errors
+  }
+}
+
+// Logarithmic slider conversion (0..1000 <-> 15..22000 Hz)
+function sliderToFreq(sliderVal) {
+  const norm = Number(sliderVal) / 1000;
+  return MIN_FREQ * Math.pow(MAX_FREQ / MIN_FREQ, norm);
+}
+
+function freqToSlider(freq) {
+  const clamped = Math.max(MIN_FREQ, Math.min(MAX_FREQ, freq));
+  return 1000 * (Math.log(clamped / MIN_FREQ) / Math.log(MAX_FREQ / MIN_FREQ));
+}
+
+function dbToLinear(db) {
+  return Math.pow(10, db / 20);
+}
+
+// Frequency to musical note & cents
+function freqToNoteInfo(freq) {
+  const noteStrings = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B'];
+  const midiFloat = 69 + 12 * Math.log2(freq / 440);
+  const midi = Math.round(midiFloat);
+  const cents = Math.round((midiFloat - midi) * 100);
+  if (midi < 0 || midi > 135) return 'Sub / Ultra';
+  const noteName = noteStrings[((midi % 12) + 12) % 12];
+  const octave = Math.floor(midi / 12) - 1;
+  const sign = cents >= 0 ? `+${cents}` : `${cents}`;
+  return `${noteName}${octave} (${sign}¢)`;
+}
+
+// Mixing band classification for sound engineers
+function getMixingBand(freq) {
+  if (freq < 20) return 'INFRA-SUB (<20 Hz)';
+  if (freq < 60) return 'SUB-BASS (Суб-бас)';
+  if (freq < 250) return 'BASS (Фундамент / Тіло)';
+  if (freq < 500) return 'LOW MID (Нижня середина / Муть)';
+  if (freq < 2000) return 'MID (Основна середина / Фокус)';
+  if (freq < 4000) return 'UPPER MID (Атака / Розбірливість)';
+  if (freq < 6000) return 'PRESENCE (Присутність / Близькість)';
+  if (freq < 16000) return 'BRILLIANCE (Сибілянти / Яскравість)';
+  return 'AIR (Повітря / Ультра-ВЧ)';
+}
+
+// Initialize Web Audio Context & Graph
+function ensureAudioEngine() {
+  if (!state.audioCtx) {
+    const AudioContextClass = window.AudioContext || window.webkitAudioContext;
+    state.audioCtx = new AudioContextClass();
+
+    state.masterGain = state.audioCtx.createGain();
+    state.masterGain.gain.value = dbToLinear(state.masterDb);
+
+    state.panner = state.audioCtx.createStereoPanner();
+    updatePanningNode();
+
+    state.analyser = state.audioCtx.createAnalyser();
+    state.analyser.fftSize = 4096;
+    state.analyser.smoothingTimeConstant = 0.82;
+
+    state.panner.connect(state.masterGain);
+    state.masterGain.connect(state.analyser);
+    state.analyser.connect(state.audioCtx.destination);
+
+    // Update Sample Rate & Nyquist readouts
+    const sr = state.audioCtx.sampleRate;
+    document.getElementById('sampleRateDisplay').textContent = `${sr} Hz`;
+    document.getElementById('nyquistDisplay').textContent = `${Math.floor(sr / 2)} Hz`;
+  }
+
+  if (state.audioCtx.state === 'suspended') {
+    state.audioCtx.resume();
+  }
+}
+
+function updatePanningNode() {
+  if (!state.panner || !state.audioCtx) return;
+  const panVal = state.currentEar === 'L' ? -1 : state.currentEar === 'R' ? 1 : 0;
+  state.panner.pan.setTargetAtTime(panVal, state.audioCtx.currentTime, 0.015);
+}
+
+// Start clean studio oscillator with anti-click envelope
+function startOscillator(customDb = null) {
+  ensureAudioEngine();
+  stopOscillatorImmediate();
+
+  const ctx = state.audioCtx;
+  const now = ctx.currentTime;
+
+  state.osc = ctx.createOscillator();
+  state.osc.type = 'sine';
+  state.osc.frequency.setValueAtTime(state.currentFreq, now);
+
+  state.pulseGain = ctx.createGain();
+  state.pulseGain.gain.setValueAtTime(1.0, now);
+
+  state.toneGain = ctx.createGain();
+  const targetAmp = customDb !== null ? dbToLinear(customDb) : 1.0;
+
+  // Anti-click soft fade-in
+  state.toneGain.gain.setValueAtTime(0.00001, now);
+  state.toneGain.gain.exponentialRampToValueAtTime(Math.max(0.0001, targetAmp), now + 0.04);
+
+  // Configure Warble Tone (FM modulation ±5% at 5 Hz to prevent room standing waves)
+  if (state.toneMode === 'warble') {
+    state.lfoOsc = ctx.createOscillator();
+    state.lfoGain = ctx.createGain();
+    state.lfoOsc.frequency.value = 5.5; // 5.5 Hz warble
+    state.lfoGain.gain.value = state.currentFreq * 0.045;
+    state.lfoOsc.connect(state.lfoGain);
+    state.lfoGain.connect(state.osc.frequency);
+    state.lfoOsc.start(now);
+  }
+
+  // Configure Pulsed Tone (2.5 Hz gentle gate for threshold detection)
+  if (state.toneMode === 'pulsed' || customDb !== null) {
+    let gateOn = true;
+    state.pulseIntervalId = setInterval(() => {
+      if (!state.pulseGain || !state.audioCtx) return;
+      gateOn = !gateOn;
+      const t = state.audioCtx.currentTime;
+      state.pulseGain.gain.setTargetAtTime(gateOn ? 1.0 : 0.02, t, 0.025);
+    }, 220);
+  }
+
+  state.osc.connect(state.pulseGain);
+  state.pulseGain.connect(state.toneGain);
+  state.toneGain.connect(state.panner);
+
+  state.osc.start(now);
+  state.isPlaying = true;
+  updatePlaybackUI();
+}
+
+function stopOscillatorImmediate() {
+  if (state.pulseIntervalId) {
+    clearInterval(state.pulseIntervalId);
+    state.pulseIntervalId = null;
+  }
+  if (state.sweepRafId) {
+    cancelAnimationFrame(state.sweepRafId);
+    state.sweepRafId = null;
+    state.isSweeping = false;
+  }
+
+  if (state.osc && state.audioCtx) {
+    const now = state.audioCtx.currentTime;
+    try {
+      state.toneGain.gain.setTargetAtTime(0.00001, now, 0.015);
+      const oldOsc = state.osc;
+      const oldLfo = state.lfoOsc;
+      setTimeout(() => {
+        try {
+          oldOsc.stop();
+          oldOsc.disconnect();
+          if (oldLfo) {
+            oldLfo.stop();
+            oldLfo.disconnect();
+          }
+        } catch (e) {}
+      }, 60);
+    } catch (e) {}
+  }
+
+  state.osc = null;
+  state.lfoOsc = null;
+  state.isPlaying = false;
+  state.audiogram.isPlayingAg = false;
+  state.quiz.isPlayingMystery = false;
+  state.quiz.isPlayingRef = false;
+  updatePlaybackUI();
+}
+
+function setFrequency(freq, updateSlider = true) {
+  const clamped = Math.max(MIN_FREQ, Math.min(MAX_FREQ, Number(freq)));
+  state.currentFreq = clamped;
+
+  if (state.osc && state.audioCtx) {
+    const now = state.audioCtx.currentTime;
+    state.osc.frequency.setTargetAtTime(clamped, now, 0.012);
+    if (state.lfoGain) {
+      state.lfoGain.gain.setTargetAtTime(clamped * 0.045, now, 0.012);
+    }
+  }
+
+  if (updateSlider) {
+    const slider = document.getElementById('freqLogSlider');
+    if (slider) slider.value = freqToSlider(clamped).toFixed(2);
+  }
+
+  updateFrequencyReadouts();
+}
+
+function isQuizBlindMasked() {
+  return state.activeTab === 'quiz' && !state.quiz.revealed && !state.quiz.isPlayingRef;
+}
+
+function updateFrequencyReadouts() {
+  if (isQuizBlindMasked()) {
+    document.getElementById('currentFreqReadout').innerHTML = `🔒 ??? <small>Hz</small>`;
+    document.getElementById('currentNoteReadout').textContent = '🔒 Сліпий тест';
+    document.getElementById('currentBandReadout').textContent = '🔒 Вгадайте частоту';
+    document.getElementById('currentWavelengthReadout').textContent = '🔒 —';
+    return;
+  }
+
+  const f = state.currentFreq;
+  const freqDisplay = f >= 1000
+    ? `${(f / 1000).toFixed(3)} <small>kHz</small> (${Math.round(f)} Hz)`
+    : `${f.toFixed(1)} <small>Hz</small>`;
+
+  document.getElementById('currentFreqReadout').innerHTML = freqDisplay;
+  document.getElementById('currentNoteReadout').textContent = freqToNoteInfo(f);
+  document.getElementById('currentBandReadout').textContent = getMixingBand(f);
+
+  const wavelengthM = SPEED_OF_SOUND / f;
+  const waveText = wavelengthM >= 1
+    ? `${wavelengthM.toFixed(2)} м`
+    : `${(wavelengthM * 100).toFixed(1)} см`;
+  document.getElementById('currentWavelengthReadout').textContent = waveText;
+}
+
+function updatePlaybackUI() {
+  const led = document.getElementById('audioStatusLed');
+  const toggleBtn = document.getElementById('toggleToneBtn');
+  const agPlayBtn = document.getElementById('agPlayToneBtn');
+  const quizPlayBtn = document.getElementById('quizPlayMysteryBtn');
+  const quizRefBtn = document.getElementById('quizPlayRefBtn');
+
+  if (state.isPlaying) {
+    led.classList.add('active');
+    toggleBtn.classList.add('playing');
+    toggleBtn.textContent = state.isSweeping
+      ? '⏸ ЗУПИНИТИ АВТО-СВІП'
+      : '⏸ ВИМКНУТИ ТОН-ГЕНЕРАТОР';
+  } else {
+    led.classList.remove('active');
+    toggleBtn.classList.remove('playing');
+    toggleBtn.textContent = '▶ УВІМКНУТИ ТОН-ГЕНЕРАТОР';
+  }
+
+  if (agPlayBtn) {
+    agPlayBtn.textContent = state.audiogram.isPlayingAg
+      ? '⏸ Зупинити пульс-тон'
+      : '▶ Прослухати пульс-тон';
+    agPlayBtn.classList.toggle('playing', state.audiogram.isPlayingAg);
+  }
+
+  if (quizPlayBtn) {
+    quizPlayBtn.textContent = state.quiz.isPlayingMystery
+      ? '⏸ ЗУПИНИТИ ЗАГАДАНИЙ ТОН'
+      : '🔊 СЛУХАТИ ЗАГАДАНИЙ ТОН';
+    quizPlayBtn.classList.toggle('playing', state.quiz.isPlayingMystery);
+  }
+
+  if (quizRefBtn) {
+    quizRefBtn.textContent = state.quiz.isPlayingRef
+      ? '⏸ Вимкнути Еталон 1 kHz'
+      : '🔔 Еталон 1 kHz (Референс)';
+    quizRefBtn.classList.toggle('playing', state.quiz.isPlayingRef);
+  }
+}
+
+// Automated Logarithmic Frequency Sweep
+function startFrequencySweep(startFreq, endFreq) {
+  const speedMap = { slow: 35000, medium: 20000, fast: 10000 };
+  const speedSelect = document.getElementById('sweepSpeedSelect').value;
+  const durationMs = speedMap[speedSelect] || 20000;
+
+  setFrequency(startFreq, true);
+  startOscillator();
+  state.isSweeping = true;
+  updatePlaybackUI();
+
+  const startTime = performance.now();
+
+  function step(now) {
+    if (!state.isSweeping || !state.isPlaying) return;
+    const elapsed = now - startTime;
+    const progress = Math.min(1, elapsed / durationMs);
+
+    // Exponential interpolation for constant octave/sec perception
+    const current = startFreq * Math.pow(endFreq / startFreq, progress);
+    setFrequency(current, true);
+
+    if (progress < 1) {
+      state.sweepRafId = requestAnimationFrame(step);
+    } else {
+      state.isSweeping = false;
+      updatePlaybackUI();
+    }
+  }
+
+  state.sweepRafId = requestAnimationFrame(step);
+}
+
+// Record Lower or Upper Hearing Limit for Current Ear
+function recordLimit(boundType) {
+  const ear = state.currentEar;
+  const freqRounded = Math.round(state.currentFreq * 10) / 10;
+  state.limits[ear][boundType] = freqRounded;
+
+  // If measured in stereo and L/R are empty, keep stereo independent
+  saveState();
+  renderLimitCards();
+  renderSoundEngineerReport();
+}
+
+function renderLimitCards() {
+  ['both', 'L', 'R'].forEach((ear) => {
+    const low = state.limits[ear].low;
+    const high = state.limits[ear].high;
+
+    document.getElementById(`lowLimit-${ear}`).textContent =
+      low !== null ? `${low.toFixed(1)} Hz` : '— Hz';
+    document.getElementById(`highLimit-${ear}`).textContent =
+      high !== null ? `${Math.round(high)} Hz` : '— Hz';
+
+    const bwEl = document.getElementById(`bandwidth-${ear}`);
+    const octEl = document.getElementById(`spanOctaves-${ear}`);
+    const barEl = document.getElementById(`rangeBar-${ear}`);
+
+    if (low !== null && high !== null && high > low) {
+      const bw = Math.round(high - low);
+      const octaves = Math.log2(high / low).toFixed(2);
+      bwEl.textContent = `${bw.toLocaleString('uk-UA')} Hz`;
+      octEl.textContent = `${octaves} октав`;
+
+      const leftPct = Math.max(0, Math.min(100, freqToSlider(low) / 10));
+      const rightPct = Math.max(0, Math.min(100, freqToSlider(high) / 10));
+      barEl.style.left = `${leftPct}%`;
+      barEl.style.width = `${Math.max(2, rightPct - leftPct)}%`;
+    } else {
+      bwEl.textContent = '— Hz';
+      octEl.textContent = '— октав';
+      barEl.style.left = '0%';
+      barEl.style.width = '0%';
+    }
+  });
+
+  // Highlight active ear card
+  document.querySelectorAll('.ear-result-card').forEach((card) => {
+    card.classList.toggle('active-card', card.dataset.cardEar === state.currentEar);
+  });
+}
+
+// Real-time Spectrum & Frequency Marker Visualizer
+function initSpectrumVisualizer() {
+  const canvas = document.getElementById('spectrumCanvas');
+  const ctx = canvas.getContext('2d');
+  const freqData = new Uint8Array(2048);
+
+  function draw() {
+    requestAnimationFrame(draw);
+
+    const w = canvas.width;
+    const h = canvas.height;
+    ctx.clearRect(0, 0, w, h);
+
+    // Background grid lines (logarithmic frequencies)
+    const gridFreqs = [20, 50, 100, 250, 500, 1000, 2000, 4000, 8000, 16000, 20000];
+    ctx.strokeStyle = '#182232';
+    ctx.lineWidth = 1;
+    ctx.fillStyle = '#52637a';
+    ctx.font = '11px monospace';
+
+    gridFreqs.forEach((gf) => {
+      const x = (freqToSlider(gf) / 1000) * w;
+      ctx.beginPath();
+      ctx.moveTo(x, 0);
+      ctx.lineTo(x, h);
+      ctx.stroke();
+      const label = gf >= 1000 ? `${gf / 1000}k` : `${gf}`;
+      ctx.fillText(label, x + 4, h - 8);
+    });
+
+    if (isQuizBlindMasked()) {
+      ctx.fillStyle = 'rgba(255, 170, 0, 0.85)';
+      ctx.font = 'bold 13px monospace';
+      ctx.textAlign = 'center';
+      ctx.fillText('🎓 СЛІПИЙ РЕЖИМ ВІКТОРИНИ — СПЕКТРОАНАЛІЗАТОР ПРИХОВАНО ДО ВАШОЇ ВІДПОВІДІ', w / 2, h / 2);
+      ctx.textAlign = 'left';
+      return;
+    }
+
+    // Draw recorded range shaded zone for current ear
+    const activeLim = state.limits[state.currentEar];
+    if (activeLim.low && activeLim.high && activeLim.high > activeLim.low) {
+      const x1 = (freqToSlider(activeLim.low) / 1000) * w;
+      const x2 = (freqToSlider(activeLim.high) / 1000) * w;
+      ctx.fillStyle = 'rgba(24, 226, 153, 0.08)';
+      ctx.fillRect(x1, 0, x2 - x1, h);
+    }
+
+    // Draw FFT spectrum if audio is active
+    if (state.analyser && state.isPlaying) {
+      state.analyser.getByteFrequencyData(freqData);
+      const nyquist = state.audioCtx.sampleRate / 2;
+
+      ctx.beginPath();
+      ctx.moveTo(0, h);
+
+      for (let i = 1; i < freqData.length; i++) {
+        const binFreq = (i / freqData.length) * nyquist;
+        if (binFreq < MIN_FREQ || binFreq > MAX_FREQ) continue;
+        const x = (freqToSlider(binFreq) / 1000) * w;
+        const val = freqData[i] / 255;
+        const y = h - val * (h - 24);
+        ctx.lineTo(x, y);
+      }
+
+      ctx.strokeStyle = '#00d4ff';
+      ctx.lineWidth = 2;
+      ctx.stroke();
+    }
+
+    // Draw current frequency cursor line
+    const cursorX = (freqToSlider(state.currentFreq) / 1000) * w;
+    ctx.strokeStyle = state.isPlaying ? '#18e299' : '#ffaa00';
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.moveTo(cursorX, 0);
+    ctx.lineTo(cursorX, h);
+    ctx.stroke();
+
+    // Draw glowing dot on cursor
+    ctx.fillStyle = state.isPlaying ? '#18e299' : '#ffaa00';
+    ctx.beginPath();
+    ctx.arc(cursorX, 22, 5, 0, Math.PI * 2);
+    ctx.fill();
+  }
+
+  draw();
+}
+
+// ==========================================
+// TAB 2: STUDIO AUDIOGRAM (L/R THRESHOLD)
+// ==========================================
+function initAudiogramUI() {
+  const container = document.getElementById('audiogramFreqButtons');
+  container.innerHTML = '';
+
+  AUDIOGRAM_FREQS.forEach((freq, idx) => {
+    const btn = document.createElement('button');
+    btn.type = 'button';
+    btn.className = 'ag-freq-btn';
+    btn.textContent = freq >= 1000 ? `${freq / 1000}k` : `${freq}Hz`;
+    btn.addEventListener('click', () => selectAudiogramFreq(idx));
+    container.appendChild(btn);
+  });
+
+  updateAudiogramUI();
+  drawAudiogramCanvas();
+}
+
+function selectAudiogramFreq(index) {
+  state.audiogram.activeFreqIndex = index;
+  const freq = AUDIOGRAM_FREQS[index];
+  const savedVal = state.audiogram.points[state.audiogram.activeEar][freq];
+  if (typeof savedVal === 'number') {
+    state.audiogram.currentDb = savedVal;
+    document.getElementById('agLevelSlider').value = savedVal;
+  }
+  if (state.audiogram.isPlayingAg) {
+    playAudiogramTone();
+  }
+  updateAudiogramUI();
+  drawAudiogramCanvas();
+}
+
+function updateAudiogramUI() {
+  const idx = state.audiogram.activeFreqIndex;
+  const freq = AUDIOGRAM_FREQS[idx];
+  const ear = state.audiogram.activeEar;
+
+  document.getElementById('audiogramStepBadge').textContent =
+    `Частота ${idx + 1} / ${AUDIOGRAM_FREQS.length}`;
+  document.getElementById('agActiveFreq').textContent =
+    freq >= 1000 ? `${freq / 1000} kHz (${freq} Hz)` : `${freq} Hz`;
+  document.getElementById('agActiveEar').textContent =
+    ear === 'L' ? '◀ Ліве вухо (L)' : '▶ Праве вухо (R)';
+  document.getElementById('agCurrentDb').textContent = `${state.audiogram.currentDb} dBFS`;
+
+  const buttons = document.querySelectorAll('#audiogramFreqButtons .ag-freq-btn');
+  buttons.forEach((btn, i) => {
+    const f = AUDIOGRAM_FREQS[i];
+    const hasL = typeof state.audiogram.points.L[f] === 'number';
+    const hasR = typeof state.audiogram.points.R[f] === 'number';
+    btn.classList.toggle('active', i === idx);
+    btn.classList.toggle('done', hasL || hasR);
+  });
+
+  document.querySelectorAll('[data-ag-ear]').forEach((btn) => {
+    btn.classList.toggle('active', btn.dataset.agEar === ear);
+  });
+}
+
+function playAudiogramTone() {
+  const freq = AUDIOGRAM_FREQS[state.audiogram.activeFreqIndex];
+  state.currentEar = state.audiogram.activeEar;
+  updateEarButtonsUI();
+  updatePanningNode();
+
+  setFrequency(freq, true);
+  state.audiogram.isPlayingAg = true;
+  startOscillator(state.audiogram.currentDb);
+  updatePlaybackUI();
+}
+
+function drawAudiogramCanvas() {
+  const canvas = document.getElementById('audiogramCanvas');
+  if (!canvas) return;
+  const ctx = canvas.getContext('2d');
+  const w = canvas.width;
+  const h = canvas.height;
+  const padL = 58;
+  const padR = 26;
+  const padT = 26;
+  const padB = 42;
+  const plotW = w - padL - padR;
+  const plotH = h - padT - padB;
+
+  ctx.clearRect(0, 0, w, h);
+
+  // dB grid (-80 dBFS at bottom to -5 dBFS at top)
+  const dbLevels = [-80, -70, -60, -50, -40, -30, -20, -10];
+  ctx.font = '11px monospace';
+
+  dbLevels.forEach((db) => {
+    const normY = (db - -5) / (-80 - -5); // -5 at top (0), -80 at bottom (1)
+    const y = padT + normY * plotH;
+    ctx.strokeStyle = '#1b2434';
+    ctx.beginPath();
+    ctx.moveTo(padL, y);
+    ctx.lineTo(w - padR, y);
+    ctx.stroke();
+
+    ctx.fillStyle = '#7e90aa';
+    ctx.fillText(`${db} dB`, 8, y + 4);
+  });
+
+  // Frequency columns
+  AUDIOGRAM_FREQS.forEach((freq, i) => {
+    const x = padL + (i / (AUDIOGRAM_FREQS.length - 1)) * plotW;
+    ctx.strokeStyle = i === state.audiogram.activeFreqIndex ? '#2d4466' : '#161e2c';
+    ctx.beginPath();
+    ctx.moveTo(x, padT);
+    ctx.lineTo(x, h - padB);
+    ctx.stroke();
+
+    ctx.fillStyle = i === state.audiogram.activeFreqIndex ? '#00d4ff' : '#7e90aa';
+    const label = freq >= 1000 ? `${freq / 1000}k` : `${freq}`;
+    ctx.fillText(label, x - 12, h - 16);
+  });
+
+  // Draw Reference Normal Threshold Curve (dashed)
+  ctx.save();
+  ctx.setLineDash([5, 5]);
+  ctx.strokeStyle = 'rgba(255, 170, 0, 0.4)';
+  ctx.lineWidth = 1.5;
+  ctx.beginPath();
+  AUDIOGRAM_FREQS.forEach((freq, i) => {
+    const refDb = ISO_REF_CURVE[freq] ?? -50;
+    const x = padL + (i / (AUDIOGRAM_FREQS.length - 1)) * plotW;
+    const normY = (refDb - -5) / (-80 - -5);
+    const y = padT + normY * plotH;
+    if (i === 0) ctx.moveTo(x, y);
+    else ctx.lineTo(x, y);
+  });
+  ctx.stroke();
+  ctx.restore();
+
+  // Helper to draw L and R ear curves
+  function drawEarCurve(earKey, color) {
+    const pts = [];
+    AUDIOGRAM_FREQS.forEach((freq, i) => {
+      const db = state.audiogram.points[earKey][freq];
+      if (typeof db === 'number') {
+        const x = padL + (i / (AUDIOGRAM_FREQS.length - 1)) * plotW;
+        const normY = (db - -5) / (-80 - -5);
+        const y = padT + normY * plotH;
+        pts.push({ x, y, db, freq });
+      }
+    });
+
+    if (pts.length > 1) {
+      ctx.strokeStyle = color;
+      ctx.lineWidth = 2.5;
+      ctx.beginPath();
+      pts.forEach((p, idx) => {
+        if (idx === 0) ctx.moveTo(p.x, p.y);
+        else ctx.lineTo(p.x, p.y);
+      });
+      ctx.stroke();
+    }
+
+    pts.forEach((p) => {
+      ctx.fillStyle = color;
+      ctx.beginPath();
+      ctx.arc(p.x, p.y, 5, 0, Math.PI * 2);
+      ctx.fill();
+    });
+  }
+
+  drawEarCurve('L', '#38bdf8');
+  drawEarCurve('R', '#fb7185');
+
+  // Legend in top-right
+  ctx.fillStyle = '#38bdf8';
+  ctx.fillText('● Ліве вухо (L)', w - 340, 18);
+  ctx.fillStyle = '#fb7185';
+  ctx.fillText('● Праве вухо (R)', w - 220, 18);
+  ctx.fillStyle = '#ffaa00';
+  ctx.fillText('--- Еталон ISO', w - 110, 18);
+}
+
+// ==========================================
+// TAB 3: SOUND ENGINEER ANALYTICS & REPORT
+// ==========================================
+function renderSoundEngineerReport() {
+  const bestLow =
+    state.limits.both.low ??
+    state.limits.L.low ??
+    state.limits.R.low ??
+    24;
+  const bestHigh =
+    state.limits.both.high ??
+    state.limits.L.high ??
+    state.limits.R.high ??
+    16800;
+
+  const octaves = bestHigh > bestLow ? Math.log2(bestHigh / bestLow).toFixed(2) : '—';
+  const airCoveragePct = Math.min(100, Math.max(0, Math.round(((bestHigh - 10000) / 10000) * 100)));
+
+  const summaryGrid = document.getElementById('reportSummaryGrid');
+  summaryGrid.innerHTML = `
+    <div class="summary-stat">
+      <span class="s-title">Робочий діапазон частот</span>
+      <span class="s-value">${bestLow.toFixed(1)} Hz – ${Math.round(bestHigh)} Hz</span>
+      <span class="s-sub">Нижня та верхня межа чутності</span>
+    </div>
+    <div class="summary-stat">
+      <span class="s-title">Охоплення в октавах</span>
+      <span class="s-value">${octaves} октав</span>
+      <span class="s-sub">Зі ~10.0 теоретичних октав (20Hz–20kHz)</span>
+    </div>
+    <div class="summary-stat">
+      <span class="s-title">Контроль Air-діапазону (10k–20k)</span>
+      <span class="s-value">${airCoveragePct}%</span>
+      <span class="s-sub">${bestHigh >= 16500 ? 'Висока роздільна здатність ВЧ' : 'Потребує візуального аналізатора ВЧ'}</span>
+    </div>
+    <div class="summary-stat">
+      <span class="s-title">Контроль Sub-Bass (<40 Hz)</span>
+      <span class="s-value">${bestLow <= 28 ? 'Повний' : bestLow <= 42 ? 'Помірний' : 'Обмежений'}</span>
+      <span class="s-sub">Нижній поріг: ${bestLow.toFixed(1)} Hz</span>
+    </div>
+  `;
+
+  // Generate tailored mixing & mastering recommendations
+  const adviceList = document.getElementById('engineeringAdviceList');
+  const tips = [];
+
+  if (bestHigh >= 17000) {
+    tips.push({
+      cls: 'good',
+      text: `<strong>Відмінний контроль Brilliance & Air (до ${Math.round(bestHigh)} Hz):</strong> Ви чуєте ультрависокі гармоніки та роботу чистих High-Shelf еквалайзерів на 12–16 кГц без ризику випадково переяскравити мікс.`
+    });
+  } else if (bestHigh >= 14000) {
+    tips.push({
+      cls: 'good',
+      text: `<strong>Стандартний професійний діапазон ВЧ (до ${Math.round(bestHigh)} Hz):</strong> Ви повністю контролюєте зону сибілянтів (5–9 кГц) та повітря до 14+ кГц. Під час роботи з полицями вище 15 кГц (Air EQ) звіряйтеся зі спектроаналізатором (наприклад, FabFilter Pro-Q або Voxengo SPAN).`
+    });
+  } else {
+    tips.push({
+      cls: 'warn',
+      text: `<strong>Обережність із High-Shelf вище ${Math.round(bestHigh)} Hz:</strong> Через спад чутливості вище цієї межі виникає спокуса надмірно піднімати верхні частоти при зведенні. Використовуйте референс-треки та обрізний Low-Pass або візуальний контроль спектра у зоні 12–20 кГц.`
+    });
+  }
+
+  if (bestLow <= 25) {
+    tips.push({
+      cls: 'good',
+      text: `<strong>Глибокий моніторинг Sub-Bass (${bestLow.toFixed(1)} Hz):</strong> Ваші навушники/монітори та слух дозволяють контролювати інфра-низ і фундамент бочки (Kick) та 808-басу. Не забувайте перевіряти Low-Cut фільтри на 20–30 Гц.`
+    });
+  } else {
+    tips.push({
+      cls: 'warn',
+      text: `<strong>Нижній поріг ${bestLow.toFixed(1)} Hz:</strong> Ймовірно, поточна акустика або навушники мають спад на суб-басі. При роботі з саб-басом (20–45 Hz) використовуйте гармонічне насичення або перевіряйте рівень сабу за аналізатором.`
+    });
+  }
+
+  tips.push({
+    cls: '',
+    text: `<strong>Оптимальний рівень моніторингу (Криві рівної гучності ISO 226):</strong> Максимальна лінійність людського слуху досягається при гучності моніторингу <strong>78–83 dB SPL (C-weighted)</strong>. На занадто тихій гучності вухо гірше чує суб-бас та верх, а вище 85 dB SPL швидко настає слухова втома (Ear Fatigue).`
+  });
+
+  adviceList.innerHTML = tips.map((t) => `<li class="${t.cls}">${t.text}</li>`).join('');
+
+  // Calculate L/R symmetry diagnostics
+  const asymBox = document.getElementById('asymmetryReportBox');
+  const lHigh = state.limits.L.high;
+  const rHigh = state.limits.R.high;
+
+  let asymHtml = '';
+  if (lHigh && rHigh) {
+    const diffHz = Math.abs(lHigh - rHigh);
+    const strongerEar = lHigh > rHigh ? 'Ліве (L)' : 'Праве (R)';
+    asymHtml += `<p style="font-size:0.85rem; margin-bottom:8px;">
+      <strong>Порівняння ВЧ-порогу L/R:</strong> Ліве вухо = <code>${Math.round(lHigh)} Hz</code>, Праве вухо = <code>${Math.round(rHigh)} Hz</code> (Різниця: <code>${Math.round(diffHz)} Hz</code>).
+      ${diffHz > 1200 ? `<br><span style="color:var(--accent-amber)">⚠️ Помітна асиметрія ВЧ (сильніше ${strongerEar} вухо). Рекомендується періодично міняти місцями канали (L/R Swap) або перевіряти мікс у режимі MONO під час панорамування хай-хетів та гітар.</span>` : `<br><span style="color:var(--accent-green)">✅ Відмінна симетрія верхньої межі між лівим та правим вухом.</span>`}
+    </p>`;
+  } else {
+    asymHtml += `<p style="font-size:0.83rem; color:var(--text-muted);">
+      Щоб отримати точний аналіз симетрії L/R для панорамування міксу, проведіть заміри окремо для <strong>Лівого (L)</strong> та <strong>Правого (R)</strong> каналу у вкладці 1 або 2.
+    </p>`;
+  }
+
+  // Check audiogram mid/high differences
+  const diffs = [];
+  AUDIOGRAM_FREQS.forEach((f) => {
+    const lv = state.audiogram.points.L[f];
+    const rv = state.audiogram.points.R[f];
+    if (typeof lv === 'number' && typeof rv === 'number') {
+      const d = Math.abs(lv - rv);
+      if (d >= 5) diffs.push(`${f >= 1000 ? f / 1000 + 'kHz' : f + 'Hz'} (Δ ${d} dB)`);
+    }
+  });
+
+  if (diffs.length > 0) {
+    asymHtml += `<p style="font-size:0.83rem; color:var(--accent-amber); margin-top:6px;">
+      <strong>Зони розбіжності порогу >5 dB за аудіограмою:</strong> ${diffs.join(', ')}. Враховуйте це при оцінці стереообразу.
+    </p>`;
+  }
+
+  asymBox.innerHTML = asymHtml;
+}
+
+function updateEarButtonsUI() {
+  document.querySelectorAll('#earSelector button').forEach((btn) => {
+    btn.classList.toggle('active', btn.dataset.ear === state.currentEar);
+  });
+  renderLimitCards();
+}
+
+// ==========================================
+// TAB 3: EAR TRAINING FREQUENCY QUIZ
+// ==========================================
+function formatFreqLabel(f) {
+  if (f >= 1000) {
+    const k = f / 1000;
+    return `${Number.isInteger(k) ? k : k.toFixed(2).replace(/0$/, '')} kHz`;
+  }
+  return `${Math.round(f * 10) / 10} Hz`;
+}
+
+function getShortBandTag(f) {
+  if (f < 60) return 'Sub-Bass';
+  if (f < 250) return 'Bass';
+  if (f < 500) return 'Low Mid';
+  if (f < 2000) return 'Mid';
+  if (f < 4000) return 'Upper Mid';
+  if (f < 6000) return 'Presence';
+  return 'Brilliance/Air';
+}
+
+function initQuizUI() {
+  pickNewQuizQuestion(false);
+  renderQuizScoreboard();
+}
+
+function pickNewQuizQuestion(autoPlay = false) {
+  const q = state.quiz;
+  q.revealed = false;
+
+  const prevSecret = q.secretFreq;
+  if (q.difficulty === 'beginner' || q.difficulty === 'intermediate') {
+    const pool = QUIZ_POOLS[q.difficulty];
+    let candidate = pool[Math.floor(Math.random() * pool.length)];
+    if (pool.length > 1 && candidate === prevSecret) {
+      candidate = pool[(pool.indexOf(candidate) + 1) % pool.length];
+    }
+    q.secretFreq = candidate;
+  } else {
+    // Pro mode: random logarithmic frequency between 35 Hz and 15500 Hz
+    const minLog = Math.log(35);
+    const maxLog = Math.log(15500);
+    const randFreq = Math.exp(minLog + Math.random() * (maxLog - minLog));
+    q.secretFreq = Math.round(randFreq);
+  }
+
+  // Update UI containers for difficulty mode
+  const choicesBox = document.getElementById('quizChoicesContainer');
+  const proSliderBox = document.getElementById('quizProSliderContainer');
+  if (q.difficulty === 'pro') {
+    choicesBox.style.display = 'none';
+    proSliderBox.style.display = 'flex';
+  } else {
+    choicesBox.style.display = 'flex';
+    proSliderBox.style.display = 'none';
+    renderQuizOptionButtons();
+  }
+
+  // Reset mystery display
+  const mysteryBox = document.getElementById('quizMysteryDisplay');
+  mysteryBox.classList.remove('revealed');
+  document.getElementById('quizSecretFreqText').textContent = '??? Hz';
+  document.getElementById('quizSecretHintText').textContent =
+    'Слухайте тон (та за потреби еталон 1 kHz) і оберіть частоту нижче';
+  document.getElementById('quizRoundBadge').textContent =
+    `Раунд ${Math.min(q.round, q.maxRounds)} / ${q.maxRounds}`;
+
+  updateFrequencyReadouts();
+
+  if (autoPlay) {
+    playQuizMysteryTone();
+  } else if (state.isPlaying) {
+    stopOscillatorImmediate();
+  }
+}
+
+function renderQuizOptionButtons() {
+  const grid = document.getElementById('quizOptionsGrid');
+  grid.innerHTML = '';
+  const pool = QUIZ_POOLS[state.quiz.difficulty] || QUIZ_POOLS.intermediate;
+
+  pool.forEach((freq) => {
+    const btn = document.createElement('button');
+    btn.type = 'button';
+    btn.className = 'quiz-opt-btn';
+    btn.dataset.freq = freq;
+    btn.innerHTML = `<span>${formatFreqLabel(freq)}</span><small>${getShortBandTag(freq)}</small>`;
+    btn.addEventListener('click', () => submitQuizGuess(freq, btn));
+    grid.appendChild(btn);
+  });
+}
+
+function playQuizMysteryTone() {
+  state.toneMode = state.quiz.timbre;
+  state.quiz.isPlayingMystery = true;
+  state.quiz.isPlayingRef = false;
+  setFrequency(state.quiz.secretFreq, false);
+  startOscillator();
+  state.quiz.isPlayingMystery = true;
+  updatePlaybackUI();
+  updateFrequencyReadouts();
+}
+
+function playQuizReferenceTone() {
+  state.toneMode = 'sine';
+  state.quiz.isPlayingRef = true;
+  state.quiz.isPlayingMystery = false;
+  setFrequency(1000, false);
+  startOscillator();
+  state.quiz.isPlayingRef = true;
+  updatePlaybackUI();
+  updateFrequencyReadouts();
+}
+
+function submitQuizGuess(guessedFreq, clickedBtn = null) {
+  const q = state.quiz;
+  if (q.revealed) return; // Already answered this round
+
+  q.revealed = true;
+  const secret = q.secretFreq;
+  const octaveError = Math.abs(Math.log2(guessedFreq / secret));
+
+  // Calculate score (0..100) based on octave proximity
+  let pts = 0;
+  if (octaveError < 0.05) {
+    pts = 100;
+  } else if (octaveError <= 0.36) {
+    pts = 85;
+  } else if (octaveError <= 0.55) {
+    pts = 70;
+  } else if (octaveError <= 1.02) {
+    pts = 45;
+  } else if (octaveError <= 1.5) {
+    pts = 20;
+  } else {
+    pts = 0;
+  }
+
+  if (pts >= 85) {
+    q.streak += 1;
+  } else {
+    q.streak = 0;
+  }
+
+  q.score += pts;
+  q.history.push({
+    round: q.history.length + 1,
+    secret,
+    guess: guessedFreq,
+    octaveError,
+    pts
+  });
+
+  // Reveal secret frequency on Mystery Deck & top readouts
+  setFrequency(secret, true);
+  const mysteryBox = document.getElementById('quizMysteryDisplay');
+  mysteryBox.classList.add('revealed');
+  document.getElementById('quizSecretFreqText').textContent =
+    `${formatFreqLabel(secret)} (${Math.round(secret)} Hz)`;
+  document.getElementById('quizSecretHintText').textContent =
+    `${getMixingBand(secret)} • Нота: ${freqToNoteInfo(secret)}`;
+
+  // Highlight multiple-choice buttons if applicable
+  document.querySelectorAll('#quizOptionsGrid .quiz-opt-btn').forEach((btn) => {
+    const bf = parseFloat(btn.dataset.freq);
+    btn.disabled = true;
+    if (bf === secret) {
+      btn.classList.add('correct');
+    } else if (btn === clickedBtn && bf !== secret) {
+      btn.classList.add('wrong');
+    }
+  });
+
+  // Update Feedback Banner
+  const banner = document.getElementById('quizFeedbackBanner');
+  banner.className = 'quiz-feedback-banner';
+  if (pts === 100) {
+    banner.classList.add('good');
+    banner.innerHTML = `🎯 <strong>Бездоганне влучання (+100 балів)!</strong> Це дійсно <code>${formatFreqLabel(secret)}</code> (${getMixingBand(secret)}). Натисніть «Наступне питання →» для продовження.`;
+  } else if (pts >= 70) {
+    banner.classList.add('good');
+    banner.innerHTML = `👍 <strong>Дуже близько (+${pts} балів)!</strong> Ви обрали <code>${formatFreqLabel(guessedFreq)}</code>, а звучало <code>${formatFreqLabel(secret)}</code> (похибка: ${octaveError.toFixed(2)} октави).`;
+  } else if (pts >= 40) {
+    banner.classList.add('warn');
+    banner.innerHTML = `⚠️ <strong>Похибка в межах октави (+${pts} балів):</strong> Ваша відповідь <code>${formatFreqLabel(guessedFreq)}</code>, правильна частота — <code>${formatFreqLabel(secret)}</code> (${octaveError.toFixed(2)} октави).`;
+  } else {
+    banner.classList.add('bad');
+    banner.innerHTML = `❌ <strong>Промах (+${pts} балів):</strong> Ви обрали <code>${formatFreqLabel(guessedFreq)}</code>, а насправді звучало <code>${formatFreqLabel(secret)}</code> (різниця ${octaveError.toFixed(2)} октави). Послухайте еталон 1 kHz для калібрування слуху!`;
+  }
+
+  if (q.round < q.maxRounds) {
+    q.round += 1;
+  }
+
+  renderQuizScoreboard();
+}
+
+function renderQuizScoreboard() {
+  const q = state.quiz;
+  const count = q.history.length;
+  const maxPossible = Math.max(1, count) * 100;
+  const avgAccuracy = count > 0 ? Math.round((q.score / maxPossible) * 100) : null;
+
+  document.getElementById('quizTotalScore').textContent = `${q.score} / ${q.maxRounds * 100}`;
+  document.getElementById('quizStreakVal').textContent = `${q.streak} 🔥`;
+  document.getElementById('quizAccuracyVal').textContent =
+    avgAccuracy !== null ? `${avgAccuracy}%` : '— %';
+
+  let grade = '—';
+  if (avgAccuracy !== null) {
+    if (avgAccuracy >= 90) grade = 'A+ (Золоті вуха)';
+    else if (avgAccuracy >= 78) grade = 'A (Відмінно)';
+    else if (avgAccuracy >= 65) grade = 'B (Добре)';
+    else if (avgAccuracy >= 50) grade = 'C (Задовільно)';
+    else grade = 'Потрібна практика';
+  }
+  document.getElementById('quizGradeVal').textContent = grade;
+
+  const tbody = document.getElementById('quizHistoryBody');
+  if (count === 0) {
+    tbody.innerHTML = `<tr><td colspan="5" style="text-align:center; color:var(--text-muted);">Ще немає відповідей у цій серії</td></tr>`;
+    return;
+  }
+
+  tbody.innerHTML = q.history
+    .slice()
+    .reverse()
+    .map(
+      (item) => `
+      <tr>
+        <td>#${item.round}</td>
+        <td><strong>${formatFreqLabel(item.secret)}</strong></td>
+        <td>${formatFreqLabel(item.guess)}</td>
+        <td>${item.octaveError.toFixed(2)} окт.</td>
+        <td style="color:${item.pts >= 80 ? 'var(--accent-green)' : item.pts >= 45 ? 'var(--accent-amber)' : 'var(--accent-red)'}; font-weight:700;">+${item.pts}</td>
+      </tr>
+    `
+    )
+    .join('');
+}
+
+function resetQuizSession() {
+  state.quiz.round = 1;
+  state.quiz.score = 0;
+  state.quiz.streak = 0;
+  state.quiz.history = [];
+  pickNewQuizQuestion(false);
+  renderQuizScoreboard();
+  const banner = document.getElementById('quizFeedbackBanner');
+  banner.className = 'quiz-feedback-banner';
+  banner.innerHTML = `Нову серію з 10 питань розпочато! Натисніть <strong>«Слухати загаданий тон»</strong>.`;
+}
+
+// ==========================================
+// EVENT LISTENERS & INITIALIZATION
+// ==========================================
+document.addEventListener('DOMContentLoaded', () => {
+  loadSavedState();
+  updateFrequencyReadouts();
+  renderLimitCards();
+  initSpectrumVisualizer();
+  initAudiogramUI();
+  initQuizUI();
+  renderSoundEngineerReport();
+
+  // Tab navigation
+  document.querySelectorAll('.tab-btn').forEach((btn) => {
+    btn.addEventListener('click', () => {
+      stopOscillatorImmediate();
+      state.activeTab = btn.dataset.tab;
+      document.querySelectorAll('.tab-btn').forEach((b) => b.classList.remove('active'));
+      document.querySelectorAll('.tab-content').forEach((c) => c.classList.remove('active'));
+      btn.classList.add('active');
+      document.getElementById(`tab-${btn.dataset.tab}`).classList.add('active');
+      updateFrequencyReadouts();
+      if (btn.dataset.tab === 'audiogram') drawAudiogramCanvas();
+      if (btn.dataset.tab === 'report') renderSoundEngineerReport();
+    });
+  });
+
+  // Master level fader
+  const masterSlider = document.getElementById('masterGainSlider');
+  masterSlider.addEventListener('input', (e) => {
+    state.masterDb = parseFloat(e.target.value);
+    document.getElementById('masterGainValue').textContent = `${state.masterDb} dBFS`;
+    if (state.masterGain && state.audioCtx) {
+      state.masterGain.gain.setTargetAtTime(
+        dbToLinear(state.masterDb),
+        state.audioCtx.currentTime,
+        0.015
+      );
+    }
+  });
+
+  // Panic stop button
+  document.getElementById('panicStopBtn').addEventListener('click', () => {
+    stopOscillatorImmediate();
+  });
+
+  // Ear selector (L / L+R / R)
+  document.querySelectorAll('#earSelector button').forEach((btn) => {
+    btn.addEventListener('click', () => {
+      state.currentEar = btn.dataset.ear;
+      updateEarButtonsUI();
+      updatePanningNode();
+    });
+  });
+
+  // Main logarithmic frequency slider
+  const freqSlider = document.getElementById('freqLogSlider');
+  freqSlider.addEventListener('input', (e) => {
+    state.isSweeping = false;
+    const freq = sliderToFreq(e.target.value);
+    setFrequency(freq, false);
+  });
+
+  // Fine frequency step buttons
+  document.querySelectorAll('.fine-step-btns button').forEach((btn) => {
+    btn.addEventListener('click', () => {
+      const step = parseFloat(btn.dataset.step);
+      setFrequency(state.currentFreq + step, true);
+    });
+  });
+
+  // Tone mode selector (Pure Sine / Warble / Pulsed)
+  document.getElementById('toneModeSelect').addEventListener('change', (e) => {
+    state.toneMode = e.target.value;
+    if (state.isPlaying) {
+      startOscillator();
+    }
+  });
+
+  // Toggle tone generator button
+  document.getElementById('toggleToneBtn').addEventListener('click', () => {
+    if (state.isPlaying) {
+      stopOscillatorImmediate();
+    } else {
+      startOscillator();
+    }
+  });
+
+  // Automated Sweeps
+  document.getElementById('startLowSweepBtn').addEventListener('click', () => {
+    startFrequencySweep(120, 15);
+  });
+
+  document.getElementById('startHighSweepBtn').addEventListener('click', () => {
+    startFrequencySweep(8000, 22000);
+  });
+
+  document.getElementById('startFullSweepBtn').addEventListener('click', () => {
+    startFrequencySweep(20, 22000);
+  });
+
+  // Capture Low & High Hearing Limits
+  document.getElementById('markLowLimitBtn').addEventListener('click', () => {
+    recordLimit('low');
+  });
+
+  document.getElementById('markHighLimitBtn').addEventListener('click', () => {
+    recordLimit('high');
+  });
+
+  document.getElementById('resetLimitsBtn').addEventListener('click', () => {
+    state.limits = {
+      both: { low: null, high: null },
+      L: { low: null, high: null },
+      R: { low: null, high: null }
+    };
+    saveState();
+    renderLimitCards();
+    renderSoundEngineerReport();
+  });
+
+  // Quick frequency preset pills
+  document.querySelectorAll('#quickFreqPills button').forEach((btn) => {
+    btn.addEventListener('click', () => {
+      state.isSweeping = false;
+      const f = parseFloat(btn.dataset.freq);
+      setFrequency(f, true);
+      if (!state.isPlaying) startOscillator();
+    });
+  });
+
+  // Audiogram Controls
+  document.querySelectorAll('[data-ag-ear]').forEach((btn) => {
+    btn.addEventListener('click', () => {
+      state.audiogram.activeEar = btn.dataset.agEar;
+      updateAudiogramUI();
+      if (state.audiogram.isPlayingAg) playAudiogramTone();
+    });
+  });
+
+  const agLevelSlider = document.getElementById('agLevelSlider');
+  agLevelSlider.addEventListener('input', (e) => {
+    state.audiogram.currentDb = parseInt(e.target.value, 10);
+    updateAudiogramUI();
+    if (state.audiogram.isPlayingAg && state.toneGain && state.audioCtx) {
+      state.toneGain.gain.setTargetAtTime(
+        dbToLinear(state.audiogram.currentDb),
+        state.audioCtx.currentTime,
+        0.02
+      );
+    }
+  });
+
+  document.getElementById('agDbDownBtn').addEventListener('click', () => {
+    agLevelSlider.value = Math.max(-80, state.audiogram.currentDb - 2);
+    agLevelSlider.dispatchEvent(new Event('input'));
+  });
+
+  document.getElementById('agDbUpBtn').addEventListener('click', () => {
+    agLevelSlider.value = Math.min(-5, state.audiogram.currentDb + 2);
+    agLevelSlider.dispatchEvent(new Event('input'));
+  });
+
+  document.getElementById('agPlayToneBtn').addEventListener('click', () => {
+    if (state.audiogram.isPlayingAg) {
+      stopOscillatorImmediate();
+    } else {
+      playAudiogramTone();
+    }
+  });
+
+  document.getElementById('agRecordPointBtn').addEventListener('click', () => {
+    const freq = AUDIOGRAM_FREQS[state.audiogram.activeFreqIndex];
+    const ear = state.audiogram.activeEar;
+    state.audiogram.points[ear][freq] = state.audiogram.currentDb;
+    saveState();
+    drawAudiogramCanvas();
+    renderSoundEngineerReport();
+
+    // Advance to next frequency automatically
+    if (state.audiogram.activeFreqIndex < AUDIOGRAM_FREQS.length - 1) {
+      selectAudiogramFreq(state.audiogram.activeFreqIndex + 1);
+    } else {
+      updateAudiogramUI();
+    }
+  });
+
+  document.getElementById('loadDemoAudiogramBtn').addEventListener('click', () => {
+    state.audiogram.points = {
+      L: {
+        20: -20, 31.5: -30, 63: -42, 125: -51, 250: -58, 500: -64,
+        1000: -68, 2000: -70, 4000: -69, 6000: -63, 8000: -60,
+        10000: -55, 12500: -48, 16000: -34, 20000: -14
+      },
+      R: {
+        20: -21, 31.5: -29, 63: -41, 125: -50, 250: -57, 500: -63,
+        1000: -67, 2000: -69, 4000: -65, 6000: -60, 8000: -58,
+        10000: -54, 12500: -46, 16000: -31, 20000: -12
+      }
+    };
+    state.limits.both = { low: 21.5, high: 17450 };
+    state.limits.L = { low: 21.5, high: 17600 };
+    state.limits.R = { low: 22.0, high: 17200 };
+    saveState();
+    renderLimitCards();
+    updateAudiogramUI();
+    drawAudiogramCanvas();
+    renderSoundEngineerReport();
+  });
+
+  document.getElementById('clearAudiogramBtn').addEventListener('click', () => {
+    state.audiogram.points = { L: {}, R: {} };
+    saveState();
+    updateAudiogramUI();
+    drawAudiogramCanvas();
+    renderSoundEngineerReport();
+  });
+
+  // Ear Training Quiz Event Listeners
+  document.getElementById('quizDifficultySelect').addEventListener('change', (e) => {
+    state.quiz.difficulty = e.target.value;
+    pickNewQuizQuestion(false);
+  });
+
+  document.getElementById('quizTimbreSelect').addEventListener('change', (e) => {
+    state.quiz.timbre = e.target.value;
+    if (state.quiz.isPlayingMystery) {
+      playQuizMysteryTone();
+    }
+  });
+
+  document.getElementById('quizPlayMysteryBtn').addEventListener('click', () => {
+    if (state.quiz.isPlayingMystery) {
+      stopOscillatorImmediate();
+    } else {
+      playQuizMysteryTone();
+    }
+  });
+
+  document.getElementById('quizPlayRefBtn').addEventListener('click', () => {
+    if (state.quiz.isPlayingRef) {
+      stopOscillatorImmediate();
+    } else {
+      playQuizReferenceTone();
+    }
+  });
+
+  document.getElementById('quizNextQuestionBtn').addEventListener('click', () => {
+    if (state.quiz.history.length >= state.quiz.maxRounds) {
+      resetQuizSession();
+      playQuizMysteryTone();
+    } else {
+      pickNewQuizQuestion(true);
+    }
+  });
+
+  const quizGuessSlider = document.getElementById('quizGuessSlider');
+  quizGuessSlider.addEventListener('input', (e) => {
+    const f = Math.round(sliderToFreq(e.target.value));
+    state.quiz.sliderGuessFreq = f;
+    document.getElementById('quizSliderReadout').textContent = `${formatFreqLabel(f)} (${f} Hz)`;
+  });
+
+  document.getElementById('quizSubmitSliderBtn').addEventListener('click', () => {
+    submitQuizGuess(state.quiz.sliderGuessFreq);
+  });
+
+  document.getElementById('quizResetBtn').addEventListener('click', () => {
+    resetQuizSession();
+  });
+
+  // Export JSON Profile
+  document.getElementById('exportJsonBtn').addEventListener('click', () => {
+    const payload = {
+      app: 'SonicRange Pro — Sound Engineer Hearing Profile',
+      timestamp: new Date().toISOString(),
+      limitsHz: state.limits,
+      audiogramDbFS: state.audiogram.points,
+      quizResults: {
+        score: state.quiz.score,
+        history: state.quiz.history
+      }
+    };
+    const blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `sonicrange-hearing-profile-${new Date().toISOString().slice(0, 10)}.json`;
+    a.click();
+    URL.revokeObjectURL(url);
+  });
+
+  // Print / Save PDF Report
+  document.getElementById('printReportBtn').addEventListener('click', () => {
+    window.print();
+  });
+
+  // Studio Keyboard Shortcuts
+  window.addEventListener('keydown', (e) => {
+    if (['INPUT', 'SELECT', 'TEXTAREA'].includes(e.target.tagName)) return;
+
+    if (e.code === 'Escape') {
+      stopOscillatorImmediate();
+    } else if (e.code === 'Space') {
+      e.preventDefault();
+      if (state.activeTab === 'quiz') {
+        if (state.quiz.isPlayingMystery) stopOscillatorImmediate();
+        else playQuizMysteryTone();
+      } else {
+        if (state.isPlaying) stopOscillatorImmediate();
+        else startOscillator();
+      }
+    } else if (e.code === 'KeyL' && state.activeTab === 'sweep') {
+      recordLimit('low');
+    } else if (e.code === 'KeyH' && state.activeTab === 'sweep') {
+      recordLimit('high');
+    }
+  });
+
+  // PWA Install Prompt & Offline Service Worker Registration
+  let deferredInstallPrompt = null;
+  const installBtn = document.getElementById('installPwaBtn');
+
+  window.addEventListener('beforeinstallprompt', (e) => {
+    e.preventDefault();
+    deferredInstallPrompt = e;
+    if (installBtn) installBtn.style.display = 'inline-flex';
+  });
+
+  if (installBtn) {
+    installBtn.addEventListener('click', async () => {
+      if (!deferredInstallPrompt) return;
+      deferredInstallPrompt.prompt();
+      await deferredInstallPrompt.userChoice;
+      deferredInstallPrompt = null;
+      installBtn.style.display = 'none';
+    });
+  }
+
+  if ('serviceWorker' in navigator && (location.protocol === 'https:' || location.hostname === 'localhost')) {
+    navigator.serviceWorker.register('./sw.js').catch(() => {});
+  }
+});
+
+
+
+</script>
+</body>
+</html>
