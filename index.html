@@ -2,8 +2,11 @@
 <html lang="uk">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
   <meta name="theme-color" content="#131822" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="apple-mobile-web-app-title" content="SonicRange Pro" />
   <title>SonicRange Pro — Аудіометрія та тест слуху для звукорежисерів</title>
   <link rel="manifest" href="manifest.json" />
   <link rel="icon" type="image/svg+xml" href="icon.svg" />
@@ -15,17 +18,23 @@
     <!-- Top Studio Header -->
     <header class="studio-header">
       <div class="brand">
-        <div class="logo-led" id="audioStatusLed" title="Статус аудіо-рушія"></div>
+        <div class="logo-led" id="audioStatusLed" title="Audio Engine Status"></div>
         <div>
           <h1>SONIC<span>RANGE</span> PRO</h1>
-          <p class="subtitle">Лабораторія вимірювання частотного діапазону та АЧХ слуху звукорежисера</p>
+          <p class="subtitle" data-i18n="appSubtitle">Лабораторія вимірювання частотного діапазону та АЧХ слуху звукорежисера</p>
         </div>
       </div>
 
       <div class="header-meters">
-        <button class="btn btn-accent" id="installPwaBtn" style="display: none;" title="Встановити як окремий додаток на комп'ютер або смартфон">
+        <div class="segmented-control lang-switch" id="langSelector" title="Мова інтерфейсу / Interface Language">
+          <button type="button" data-lang="uk" class="active">🇺🇦 UA</button>
+          <button type="button" data-lang="en">🇬🇧 EN</button>
+        </div>
+
+        <button class="btn btn-accent" id="installPwaBtn" style="display: none;" data-i18n="installAppBtn">
           📲 ВСТАНОВИТИ ДОДАТОК
         </button>
+
         <div class="sample-rate-badge">
           <span class="label">SAMPLE RATE</span>
           <strong id="sampleRateDisplay">— Hz</strong>
@@ -35,10 +44,10 @@
           <strong id="nyquistDisplay">— Hz</strong>
         </div>
         <div class="master-fader-box">
-          <label for="masterGainSlider">MASTER LEVEL: <span id="masterGainValue">-18 dBFS</span></label>
+          <label for="masterGainSlider"><span data-i18n="masterLevelLabel">MASTER LEVEL:</span> <span id="masterGainValue">-18 dBFS</span></label>
           <input type="range" id="masterGainSlider" min="-60" max="-3" step="0.5" value="-18" />
         </div>
-        <button class="btn btn-danger" id="panicStopBtn" title="Миттєво вимкнути звук (Esc)">
+        <button class="btn btn-danger" id="panicStopBtn" data-i18n="panicMuteBtn">
           ⏹ PANIC MUTE (ESC)
         </button>
       </div>
@@ -48,19 +57,19 @@
     <nav class="mode-tabs">
       <button class="tab-btn active" data-tab="sweep">
         <span class="tab-icon">〰️</span>
-        1. Діапазон частот (Sweep)
+        <span data-i18n="tabSweep">1. Діапазон частот (Sweep)</span>
       </button>
       <button class="tab-btn" data-tab="audiogram">
         <span class="tab-icon">📊</span>
-        2. Студійна Аудіограма (L/R)
+        <span data-i18n="tabAudiogram">2. Студійна Аудіограма (L/R)</span>
       </button>
       <button class="tab-btn" data-tab="quiz">
         <span class="tab-icon">🎓</span>
-        3. Вікторина: Вгадай частоту
+        <span data-i18n="tabQuiz">3. Вікторина: Вгадай частоту</span>
       </button>
       <button class="tab-btn" data-tab="report">
         <span class="tab-icon">🎚️</span>
-        4. Профіль & Звіт
+        <span data-i18n="tabReport">4. Профіль & Звіт</span>
       </button>
     </nav>
 
@@ -69,29 +78,29 @@
       <div class="vis-header">
         <div class="readout-group">
           <div class="digital-readout">
-            <span class="readout-label">ЧАСТОТА</span>
+            <span class="readout-label" data-i18n="lblFreq">ЧАСТОТА</span>
             <span class="readout-value" id="currentFreqReadout">1000.0 <small>Hz</small></span>
           </div>
           <div class="digital-readout">
-            <span class="readout-label">НОТА / ОКТАВА</span>
+            <span class="readout-label" data-i18n="lblNote">НОТА / ОКТАВА</span>
             <span class="readout-value secondary" id="currentNoteReadout">B5 (+4¢)</span>
           </div>
           <div class="digital-readout">
-            <span class="readout-label">ДІАПАЗОН МІКСУ</span>
-            <span class="readout-value band-badge" id="currentBandReadout">MID (Середина)</span>
+            <span class="readout-label" data-i18n="lblMixBand">ДІАПАЗОН МІКСУ</span>
+            <span class="readout-value band-badge" id="currentBandReadout">MID</span>
           </div>
           <div class="digital-readout">
-            <span class="readout-label">ДОВЖИНА ХВИЛІ (20°C)</span>
+            <span class="readout-label" data-i18n="lblWavelength">ДОВЖИНА ХВИЛІ (20°C)</span>
             <span class="readout-value secondary" id="currentWavelengthReadout">34.3 см</span>
           </div>
         </div>
 
         <div class="channel-selector">
-          <span class="readout-label">КАНАЛ МОНІТОРИНГУ:</span>
+          <span class="readout-label" data-i18n="lblMonitorChan">КАНАЛ МОНІТОРИНГУ:</span>
           <div class="segmented-control" id="earSelector">
-            <button type="button" data-ear="L">🎧 L (Лівий)</button>
-            <button type="button" data-ear="both" class="active">🎧 L+R (Стерео)</button>
-            <button type="button" data-ear="R">🎧 R (Правий)</button>
+            <button type="button" data-ear="L" data-i18n="earLeftBtn">🎧 L (Лівий)</button>
+            <button type="button" data-ear="both" class="active" data-i18n="earBothBtn">🎧 L+R (Стерео)</button>
+            <button type="button" data-ear="R" data-i18n="earRightBtn">🎧 R (Правий)</button>
           </div>
         </div>
       </div>
@@ -116,13 +125,13 @@
         <!-- Left Panel: Generator & Sweep Controls -->
         <div class="rack-module">
           <div class="module-header">
-            <h2>🎛️ Генератор та Логарифмічний Свіп</h2>
-            <span class="badge">Чистий синус / Warble</span>
+            <h2 data-i18n="sweepModuleTitle">🎛️ Генератор та Логарифмічний Свіп</h2>
+            <span class="badge" data-i18n="sweepBadge">Pure Sine / Warble</span>
           </div>
 
           <div class="freq-slider-container">
             <div class="slider-top-row">
-              <label for="freqLogSlider">Плавне регулювання частоти (15 Hz — 22 000 Hz)</label>
+              <label for="freqLogSlider" data-i18n="freqSliderLabel">Плавне регулювання частоти (15 Hz — 22 000 Hz)</label>
               <div class="fine-step-btns">
                 <button type="button" class="btn-mini" data-step="-100">-100 Hz</button>
                 <button type="button" class="btn-mini" data-step="-10">-10 Hz</button>
@@ -150,19 +159,19 @@
 
           <div class="controls-row">
             <div class="control-field">
-              <label>Тип сигналу</label>
+              <label data-i18n="lblSignalType">Тип сигналу</label>
               <select id="toneModeSelect">
-                <option value="sine">Pure Sine (Чистий синус — стандарт)</option>
-                <option value="warble">Warble Tone (FM ±5% — для моніторів у кімнаті)</option>
-                <option value="pulsed">Pulsed Sine (Пульсуючий 2.5 Гц — легше помітити поріг)</option>
+                <option value="sine" data-i18n="optSine">Pure Sine (Чистий синус — стандарт)</option>
+                <option value="warble" data-i18n="optWarble">Warble Tone (FM ±5% — для моніторів у кімнаті)</option>
+                <option value="pulsed" data-i18n="optPulsed">Pulsed Sine (Пульсуючий 2.5 Гц — легше помітити поріг)</option>
               </select>
             </div>
             <div class="control-field">
-              <label>Швидкість авто-свіпу</label>
+              <label data-i18n="lblSweepSpeed">Швидкість авто-свіпу</label>
               <select id="sweepSpeedSelect">
-                <option value="slow">Повільна (Точний вимір — 35 сек)</option>
-                <option value="medium" selected>Середня (Стандартна — 20 сек)</option>
-                <option value="fast">Швидка (Оглядова — 10 сек)</option>
+                <option value="slow" data-i18n="speedSlow">Повільна (Точний вимір — 35 сек)</option>
+                <option value="medium" selected data-i18n="speedMed">Середня (Стандартна — 20 сек)</option>
+                <option value="fast" data-i18n="speedFast">Швидка (Оглядова — 10 сек)</option>
               </select>
             </div>
           </div>
@@ -171,27 +180,27 @@
             <button type="button" class="btn btn-primary btn-large" id="toggleToneBtn">
               ▶ УВІМКНУТИ ТОН-ГЕНЕРАТОР
             </button>
-            <button type="button" class="btn btn-accent" id="startLowSweepBtn">
+            <button type="button" class="btn btn-accent" id="startLowSweepBtn" data-i18n="btnLowSweep">
               📉 Тест НЧ (120 Hz → 15 Hz)
             </button>
-            <button type="button" class="btn btn-accent" id="startHighSweepBtn">
+            <button type="button" class="btn btn-accent" id="startHighSweepBtn" data-i18n="btnHighSweep">
               📈 Тест ВЧ (8 kHz → 22 kHz)
             </button>
-            <button type="button" class="btn btn-secondary" id="startFullSweepBtn">
+            <button type="button" class="btn btn-secondary" id="startFullSweepBtn" data-i18n="btnFullSweep">
               🔄 Повний свіп (20 Hz → 22 kHz)
             </button>
           </div>
 
           <div class="capture-bar">
-            <div class="capture-hint">
+            <div class="capture-hint" data-i18n="captureHint">
               💡 <strong>Як фіксувати межі:</strong> Під час свіпу або ручного руху повзунка натисніть кнопку нижче (або клавіші <kbd>L</kbd> / <kbd>H</kbd> / <kbd>Space</kbd>), щойно звук з’явиться чи зникне.
             </div>
             <div class="capture-btns">
-              <button type="button" class="btn btn-capture" id="markLowLimitBtn">
-                📍 Зафіксувати НИЖНЮ межу (НЧ) <kbd>L</kbd>
+              <button type="button" class="btn btn-capture" id="markLowLimitBtn" data-i18n="btnMarkLow">
+                📍 Зафіксувати НИЖНЮ межу (НЧ) [L]
               </button>
-              <button type="button" class="btn btn-capture" id="markHighLimitBtn">
-                📍 Зафіксувати ВЕРХНЮ межу (ВЧ) <kbd>H</kbd>
+              <button type="button" class="btn btn-capture" id="markHighLimitBtn" data-i18n="btnMarkHigh">
+                📍 Зафіксувати ВЕРХНЮ межу (ВЧ) [H]
               </button>
             </div>
           </div>
@@ -200,28 +209,28 @@
         <!-- Right Panel: Measured Range Results per Ear -->
         <div class="rack-module">
           <div class="module-header">
-            <h2>🎯 Зафіксований діапазон чутності</h2>
-            <button type="button" class="btn-mini" id="resetLimitsBtn">Скинути заміри</button>
+            <h2 data-i18n="limitsModuleTitle">🎯 Зафіксований діапазон чутності</h2>
+            <button type="button" class="btn-mini" id="resetLimitsBtn" data-i18n="btnResetLimits">Скинути заміри</button>
           </div>
 
           <div class="ear-cards">
             <!-- Stereo Card -->
             <div class="ear-result-card active-card" data-card-ear="both">
               <div class="ear-card-title">
-                <strong>🎧 СТЕРЕО (L+R)</strong>
-                <span class="ear-span-badge" id="spanOctaves-both">— октав</span>
+                <strong data-i18n="cardStereoTitle">🎧 СТЕРЕО (L+R)</strong>
+                <span class="ear-span-badge" id="spanOctaves-both">—</span>
               </div>
               <div class="ear-metrics">
                 <div class="metric-box">
-                  <span class="m-label">Нижній поріг (Sub)</span>
+                  <span class="m-label" data-i18n="lblLowLim">Нижній поріг (Sub)</span>
                   <span class="m-val" id="lowLimit-both">— Hz</span>
                 </div>
                 <div class="metric-box">
-                  <span class="m-label">Верхній поріг (Air)</span>
+                  <span class="m-label" data-i18n="lblHighLim">Верхній поріг (Air)</span>
                   <span class="m-val" id="highLimit-both">— Hz</span>
                 </div>
                 <div class="metric-box">
-                  <span class="m-label">Смуга пропускання</span>
+                  <span class="m-label" data-i18n="lblBandwidth">Смуга пропускання</span>
                   <span class="m-val highlight" id="bandwidth-both">— Hz</span>
                 </div>
               </div>
@@ -233,20 +242,20 @@
             <!-- Left Ear Card -->
             <div class="ear-result-card" data-card-ear="L">
               <div class="ear-card-title">
-                <strong>◀ ЛІВЕ ВУХО (L)</strong>
-                <span class="ear-span-badge" id="spanOctaves-L">— октав</span>
+                <strong data-i18n="cardLeftTitle">◀ ЛІВЕ ВУХО (L)</strong>
+                <span class="ear-span-badge" id="spanOctaves-L">—</span>
               </div>
               <div class="ear-metrics">
                 <div class="metric-box">
-                  <span class="m-label">Нижній поріг (Sub)</span>
+                  <span class="m-label" data-i18n="lblLowLim">Нижній поріг (Sub)</span>
                   <span class="m-val" id="lowLimit-L">— Hz</span>
                 </div>
                 <div class="metric-box">
-                  <span class="m-label">Верхній поріг (Air)</span>
+                  <span class="m-label" data-i18n="lblHighLim">Верхній поріг (Air)</span>
                   <span class="m-val" id="highLimit-L">— Hz</span>
                 </div>
                 <div class="metric-box">
-                  <span class="m-label">Смуга пропускання</span>
+                  <span class="m-label" data-i18n="lblBandwidth">Смуга пропускання</span>
                   <span class="m-val highlight" id="bandwidth-L">— Hz</span>
                 </div>
               </div>
@@ -258,20 +267,20 @@
             <!-- Right Ear Card -->
             <div class="ear-result-card" data-card-ear="R">
               <div class="ear-card-title">
-                <strong>▶ ПРАВЕ ВУХО (R)</strong>
-                <span class="ear-span-badge" id="spanOctaves-R">— октав</span>
+                <strong data-i18n="cardRightTitle">▶ ПРАВЕ ВУХО (R)</strong>
+                <span class="ear-span-badge" id="spanOctaves-R">—</span>
               </div>
               <div class="ear-metrics">
                 <div class="metric-box">
-                  <span class="m-label">Нижній поріг (Sub)</span>
+                  <span class="m-label" data-i18n="lblLowLim">Нижній поріг (Sub)</span>
                   <span class="m-val" id="lowLimit-R">— Hz</span>
                 </div>
                 <div class="metric-box">
-                  <span class="m-label">Верхній поріг (Air)</span>
+                  <span class="m-label" data-i18n="lblHighLim">Верхній поріг (Air)</span>
                   <span class="m-val" id="highLimit-R">— Hz</span>
                 </div>
                 <div class="metric-box">
-                  <span class="m-label">Смуга пропускання</span>
+                  <span class="m-label" data-i18n="lblBandwidth">Смуга пропускання</span>
                   <span class="m-val highlight" id="bandwidth-R">— Hz</span>
                 </div>
               </div>
@@ -282,7 +291,7 @@
           </div>
 
           <div class="quick-presets">
-            <span class="preset-label">Швидка перевірка контрольних частот:</span>
+            <span class="preset-label" data-i18n="lblQuickPresets">Швидка перевірка контрольних частот:</span>
             <div class="preset-pills" id="quickFreqPills">
               <button type="button" data-freq="20">20 Hz</button>
               <button type="button" data-freq="30">30 Hz</button>
@@ -307,14 +316,14 @@
       <div class="grid-audiogram">
         <div class="rack-module">
           <div class="module-header">
-            <h2>📊 Побудова АЧХ чутливості слуху (Ліве та Праве вухо)</h2>
+            <h2 data-i18n="agModuleTitle">📊 Побудова АЧХ чутливості слуху (Ліве та Праве вухо)</h2>
             <div class="header-actions">
-              <button type="button" class="btn-mini" id="loadDemoAudiogramBtn">Завантажити приклад заміру</button>
-              <button type="button" class="btn-mini" id="clearAudiogramBtn">Очистити графік</button>
+              <button type="button" class="btn-mini" id="loadDemoAudiogramBtn" data-i18n="btnLoadDemo">Завантажити приклад</button>
+              <button type="button" class="btn-mini" id="clearAudiogramBtn" data-i18n="btnClearGraph">Очистити графік</button>
             </div>
           </div>
 
-          <p class="module-desc">
+          <p class="module-desc" data-i18n="agModuleDesc">
             Для звукорежисера важливо знати не лише крайні межі (Гц), а й <strong>рівномірність чутності між Лівим і Правим вухом</strong> у ключових смугах еквалайзера. Оберіть частоту, плавно піднімайте рівень з <code>-75 dBFS</code> до моменту, коли ледь почуєте пульсуючий тон, і натисніть <strong>«Записати поріг»</strong>.
           </p>
 
@@ -325,8 +334,8 @@
 
         <div class="rack-module">
           <div class="module-header">
-            <h2>🎚️ Покроковий вимір порогу</h2>
-            <span class="badge" id="audiogramStepBadge">Частота 7 / 15</span>
+            <h2 data-i18n="agStepTitle">🎚️ Покроковий вимір порогу</h2>
+            <span class="badge" id="audiogramStepBadge">7 / 15</span>
           </div>
 
           <div class="audiogram-freq-grid" id="audiogramFreqButtons">
@@ -336,26 +345,26 @@
           <div class="threshold-tester-box">
             <div class="tester-status">
               <div>
-                <span class="small-label">АКТИВНА ЧАСТОТА</span>
+                <span class="small-label" data-i18n="lblActiveFreq">АКТИВНА ЧАСТОТА</span>
                 <strong class="big-val" id="agActiveFreq">1000 Hz</strong>
               </div>
               <div>
-                <span class="small-label">КАНАЛ</span>
-                <strong class="big-val" id="agActiveEar">🎧 Ліве вухо (L)</strong>
+                <span class="small-label" data-i18n="lblChannel">КАНАЛ</span>
+                <strong class="big-val" id="agActiveEar">◀ L</strong>
               </div>
               <div>
-                <span class="small-label">РІВЕНЬ ТЕСТУ</span>
+                <span class="small-label" data-i18n="lblTestLevel">РІВЕНЬ ТЕСТУ</span>
                 <strong class="big-val accent" id="agCurrentDb">-50 dBFS</strong>
               </div>
             </div>
 
             <div class="ag-ear-switch">
-              <button type="button" class="btn btn-ear active" data-ag-ear="L">Вимірювати Ліве вухо (L)</button>
-              <button type="button" class="btn btn-ear" data-ag-ear="R">Вимірювати Праве вухо (R)</button>
+              <button type="button" class="btn btn-ear active" data-ag-ear="L" data-i18n="btnMeasureL">Вимірювати Ліве вухо (L)</button>
+              <button type="button" class="btn btn-ear" data-ag-ear="R" data-i18n="btnMeasureR">Вимірювати Праве вухо (R)</button>
             </div>
 
             <div class="ag-level-control">
-              <label for="agLevelSlider">Рівень тестового тону (піднімайте до ледь чутного звуку):</label>
+              <label for="agLevelSlider" data-i18n="lblRaiseLevel">Рівень тестового тону (піднімайте до ледь чутного звуку):</label>
               <div class="ag-slider-row">
                 <button type="button" class="btn-mini" id="agDbDownBtn">-2 dB</button>
                 <input type="range" id="agLevelSlider" min="-80" max="-5" step="1" value="-50" class="studio-slider" />
@@ -367,7 +376,7 @@
               <button type="button" class="btn btn-primary" id="agPlayToneBtn">
                 ▶ Прослухати пульс-тон
               </button>
-              <button type="button" class="btn btn-capture" id="agRecordPointBtn">
+              <button type="button" class="btn btn-capture" id="agRecordPointBtn" data-i18n="btnRecordThreshold">
                 ✅ Записати поріг та далі →
               </button>
             </div>
@@ -382,25 +391,25 @@
         <!-- Left Column: Interactive Quiz Console -->
         <div class="rack-module">
           <div class="module-header">
-            <h2>🎓 Тренажер-Вікторина: Вгадай частоту на слух</h2>
-            <span class="badge" id="quizRoundBadge">Раунд 1 / 10</span>
+            <h2 data-i18n="quizModuleTitle">🎓 Тренажер-Вікторина: Вгадай частоту на слух</h2>
+            <span class="badge" id="quizRoundBadge">1 / 10</span>
           </div>
 
           <div class="controls-row">
             <div class="control-field">
-              <label for="quizDifficultySelect">Рівень складності</label>
+              <label for="quizDifficultySelect" data-i18n="lblQuizDiff">Рівень складності</label>
               <select id="quizDifficultySelect">
-                <option value="beginner">Початковий (9 октавних частот ISO: 63 Hz – 16 kHz)</option>
-                <option value="intermediate" selected>Середній (15 студійних смуг EQ: 31.5 Hz – 16 kHz)</option>
-                <option value="pro">Експерт (Довільна частота + точний пошук повзунком)</option>
+                <option value="beginner" data-i18n="diffBeg">Початковий (9 октавних частот ISO: 63 Hz – 16 kHz)</option>
+                <option value="intermediate" selected data-i18n="diffInt">Середній (15 студійних смуг EQ: 31.5 Hz – 16 kHz)</option>
+                <option value="pro" data-i18n="diffPro">Експерт (Довільна частота + точний пошук повзунком)</option>
               </select>
             </div>
             <div class="control-field">
-              <label for="quizTimbreSelect">Тип тестового сигналу</label>
+              <label for="quizTimbreSelect" data-i18n="lblSignalType">Тип тестового сигналу</label>
               <select id="quizTimbreSelect">
-                <option value="sine">Чистий синус (Pure Sine)</option>
-                <option value="pulsed">Пульсуючий тон (Pulsed Sine)</option>
-                <option value="warble">Warble Tone (Частотно-модульований)</option>
+                <option value="sine" data-i18n="optSineShort">Чистий синус (Pure Sine)</option>
+                <option value="pulsed" data-i18n="optPulsedShort">Пульсуючий тон (Pulsed Sine)</option>
+                <option value="warble" data-i18n="optWarbleShort">Warble Tone (Частотно-модульований)</option>
               </select>
             </div>
           </div>
@@ -408,7 +417,7 @@
           <!-- Mystery Tone Playback Deck -->
           <div class="quiz-mystery-deck">
             <div class="mystery-display" id="quizMysteryDisplay">
-              <span class="mystery-label">ЗАГАДАНА ЧАСТОТА</span>
+              <span class="mystery-label" data-i18n="lblMysteryFreq">ЗАГАДАНА ЧАСТОТА</span>
               <strong class="mystery-value" id="quizSecretFreqText">??? Hz</strong>
               <span class="mystery-sub" id="quizSecretHintText">Натисніть «Слухати загаданий тон» та оберіть відповідь</span>
             </div>
@@ -417,10 +426,10 @@
               <button type="button" class="btn btn-primary btn-large" id="quizPlayMysteryBtn">
                 🔊 СЛУХАТИ ЗАГАДАНИЙ ТОН
               </button>
-              <button type="button" class="btn btn-secondary" id="quizPlayRefBtn" title="Увімкнути еталонний тон 1000 Hz для порівняння">
+              <button type="button" class="btn btn-secondary" id="quizPlayRefBtn">
                 🔔 Еталон 1 kHz (Референс)
               </button>
-              <button type="button" class="btn btn-accent" id="quizNextQuestionBtn">
+              <button type="button" class="btn btn-accent" id="quizNextQuestionBtn" data-i18n="btnNextQuestion">
                 ⏭ Наступне питання →
               </button>
             </div>
@@ -428,7 +437,7 @@
 
           <!-- Multiple-Choice Frequency Grid (for Beginner & Intermediate) -->
           <div id="quizChoicesContainer" class="quiz-choices-box">
-            <span class="preset-label">Оберіть частоту, яка зараз звучить:</span>
+            <span class="preset-label" data-i18n="lblPickFreq">Оберіть частоту, яка зараз звучить:</span>
             <div class="quiz-options-grid" id="quizOptionsGrid">
               <!-- Populated by JS -->
             </div>
@@ -437,8 +446,8 @@
           <!-- Pro Slider Guess Mode (for Expert mode or fine-tuning) -->
           <div id="quizProSliderContainer" class="freq-slider-container" style="display: none;">
             <div class="slider-top-row">
-              <label for="quizGuessSlider">Ваша відповідь на шкалі: <strong id="quizSliderReadout" style="color:var(--accent-cyan)">1000 Hz</strong></label>
-              <button type="button" class="btn btn-capture" id="quizSubmitSliderBtn">
+              <label for="quizGuessSlider"><span data-i18n="lblYourGuess">Ваша відповідь на шкалі:</span> <strong id="quizSliderReadout" style="color:var(--accent-cyan)">1000 Hz</strong></label>
+              <button type="button" class="btn btn-capture" id="quizSubmitSliderBtn" data-i18n="btnSubmitGuess">
                 ✅ Підтвердити відповідь
               </button>
             </div>
@@ -465,44 +474,44 @@
         <!-- Right Column: Student Scoreboard & Attempt History -->
         <div class="rack-module">
           <div class="module-header">
-            <h2>🏆 Результати студента та статистика</h2>
-            <button type="button" class="btn-mini" id="quizResetBtn">🔄 Почати нову серію (10 питань)</button>
+            <h2 data-i18n="quizScoreTitle">🏆 Результати студента та статистика</h2>
+            <button type="button" class="btn-mini" id="quizResetBtn" data-i18n="btnNewQuizSeries">🔄 Нова серія (10 питань)</button>
           </div>
 
           <div class="quiz-score-cards">
             <div class="metric-box">
-              <span class="m-label">Рахунок (Бали)</span>
+              <span class="m-label" data-i18n="lblScore">Рахунок (Бали)</span>
               <span class="m-val highlight" id="quizTotalScore">0 / 1000</span>
             </div>
             <div class="metric-box">
-              <span class="m-label">Серія влучань (Streak)</span>
+              <span class="m-label" data-i18n="lblStreak">Серія (Streak)</span>
               <span class="m-val" id="quizStreakVal">0 🔥</span>
             </div>
             <div class="metric-box">
-              <span class="m-label">Середня точність</span>
+              <span class="m-label" data-i18n="lblAccuracy">Середня точність</span>
               <span class="m-val" id="quizAccuracyVal">— %</span>
             </div>
             <div class="metric-box">
-              <span class="m-label">Оцінка звукорежисера</span>
+              <span class="m-label" data-i18n="lblGrade">Оцінка</span>
               <span class="m-val" id="quizGradeVal">—</span>
             </div>
           </div>
 
           <div class="quiz-history-wrapper">
-            <h4>Журнал відповідей поточної серії:</h4>
+            <h4 data-i18n="lblHistoryTitle">Журнал відповідей поточної серії:</h4>
             <table class="studio-table" id="quizHistoryTable">
               <thead>
                 <tr>
                   <th>#</th>
-                  <th>Загадано</th>
-                  <th>Відповідь</th>
-                  <th>Похибка (Октави)</th>
-                  <th>Бали</th>
+                  <th data-i18n="thTarget">Загадано</th>
+                  <th data-i18n="thAnswer">Відповідь</th>
+                  <th data-i18n="thError">Похибка</th>
+                  <th data-i18n="thPoints">Бали</th>
                 </tr>
               </thead>
               <tbody id="quizHistoryBody">
                 <tr>
-                  <td colspan="5" style="text-align:center; color:var(--text-muted);">Ще немає відповідей у цій серії</td>
+                  <td colspan="5" style="text-align:center; color:var(--text-muted);">—</td>
                 </tr>
               </tbody>
             </table>
@@ -515,10 +524,10 @@
     <main class="tab-content" id="tab-report">
       <div class="rack-module">
         <div class="module-header">
-          <h2>🎚️ Аналітичний звіт для звукорежисера</h2>
+          <h2 data-i18n="reportModuleTitle">🎚️ Аналітичний звіт для звукорежисера</h2>
           <div class="header-actions">
-            <button type="button" class="btn btn-secondary" id="exportJsonBtn">💾 Експорт JSON-профілю</button>
-            <button type="button" class="btn btn-primary" id="printReportBtn">🖨️ Друк / PDF Звіт</button>
+            <button type="button" class="btn btn-secondary" id="exportJsonBtn" data-i18n="btnExportJson">💾 Експорт JSON-профілю</button>
+            <button type="button" class="btn btn-primary" id="printReportBtn" data-i18n="btnPrintReport">🖨️ Друк / PDF Звіт</button>
           </div>
         </div>
 
@@ -528,46 +537,26 @@
 
         <div class="grid-two-cols report-details">
           <div class="report-card">
-            <h3>🔍 Вплив вашого діапазону на зведення та мастеринг</h3>
+            <h3 data-i18n="reportAdviceHeading">🔍 Вплив вашого діапазону на зведення та мастеринг</h3>
             <ul class="advice-list" id="engineeringAdviceList">
               <!-- Populated by JS -->
             </ul>
           </div>
 
           <div class="report-card">
-            <h3>⚖️ Аналіз L/R симетрії та акустичний калькулятор</h3>
+            <h3 data-i18n="reportSymmetryHeading">⚖️ Аналіз L/R симетрії та вікові норми ISO 7029</h3>
             <div id="asymmetryReportBox"></div>
             <hr class="divider" />
-            <h4>Довідник частотних зон та вікових норм ISO 7029</h4>
             <table class="studio-table">
               <thead>
                 <tr>
-                  <th>Категорія / Досвід</th>
-                  <th>Типовий верхній поріг ВЧ</th>
-                  <th>Особливості моніторингу</th>
+                  <th data-i18n="thAgeCat">Категорія / Досвід</th>
+                  <th data-i18n="thTypHigh">Типовий верхній поріг ВЧ</th>
+                  <th data-i18n="thMonNotes">Особливості моніторингу</th>
                 </tr>
               </thead>
-              <tbody>
-                <tr>
-                  <td>Еталонний діапазон (до 20 років)</td>
-                  <td>18 500 – 20 000 Hz</td>
-                  <td>Повний контроль Air-діапазону та ультрависоких гармонік</td>
-                </tr>
-                <tr>
-                  <td>Активний студійний інженер (25–35 років)</td>
-                  <td>15 500 – 17 800 Hz</td>
-                  <td>Повний контроль присутності та сибілянтів, Air >17kHz за аналізатором</td>
-                </tr>
-                <tr>
-                  <td>Досвідчений продюсер / інженер (35–50 років)</td>
-                  <td>13 500 – 15 500 Hz</td>
-                  <td>Висока чутливість до середньочастотного балансу; контроль ВЧ-полиць через Voxengo SPAN / FabFilter Pro-Q</td>
-                </tr>
-                <tr>
-                  <td>Ветеран індустрії (50+ років)</td>
-                  <td>11 000 – 13 500 Hz</td>
-                  <td>Фокус на музичному груві та M/S балансі; обов'язковий візуальний контроль вище 12 кГц</td>
-                </tr>
+              <tbody id="isoTableBody">
+                <!-- Populated by JS in selected language -->
               </tbody>
             </table>
           </div>

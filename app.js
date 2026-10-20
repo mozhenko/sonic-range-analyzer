@@ -1,6 +1,7 @@
 /**
- * SonicRange Pro — Studio Hearing Frequency Range & Audiogram Analyzer
- * Built for Sound Engineers (Web Audio API)
+ * SonicRange Pro — Studio Hearing Frequency Range, Audiogram & Ear Training Quiz
+ * Bilingual Edition (Українська / English)
+ * Repository: https://github.com/mozhenko/sonic-range-analyzer
  */
 
 const MIN_FREQ = 15;
@@ -11,7 +12,6 @@ const AUDIOGRAM_FREQS = [
   20, 31.5, 63, 125, 250, 500, 1000, 2000, 4000, 6000, 8000, 10000, 12500, 16000, 20000
 ];
 
-// Reference normal threshold curve approximation in dBFS (relative studio reference)
 const ISO_REF_CURVE = {
   20: -18,
   31.5: -28,
@@ -35,7 +35,236 @@ const QUIZ_POOLS = {
   intermediate: [31.5, 63, 100, 160, 250, 400, 630, 1000, 1600, 2500, 4000, 6300, 10000, 12500, 16000]
 };
 
+// Bilingual Localization Dictionary (UA / EN)
+const I18N = {
+  uk: {
+    pageTitle: 'SonicRange Pro — Аудіометрія та тест слуху для звукорежисерів',
+    appSubtitle: 'Лабораторія вимірювання частотного діапазону та АЧХ слуху звукорежисера',
+    installAppBtn: '📲 ВСТАНОВИТИ ДОДАТОК',
+    masterLevelLabel: 'MASTER LEVEL:',
+    panicMuteBtn: '⏹ PANIC MUTE (ESC)',
+    tabSweep: '1. Діапазон частот (Sweep)',
+    tabAudiogram: '2. Студійна Аудіограма (L/R)',
+    tabQuiz: '3. Вікторина: Вгадай частоту',
+    tabReport: '4. Профіль & Звіт',
+    lblFreq: 'ЧАСТОТА',
+    lblNote: 'НОТА / ОКТАВА',
+    lblMixBand: 'ДІАПАЗОН МІКСУ',
+    lblWavelength: 'ДОВЖИНА ХВИЛІ (20°C)',
+    lblMonitorChan: 'КАНАЛ МОНІТОРИНГУ:',
+    earLeftBtn: '🎧 L (Лівий)',
+    earBothBtn: '🎧 L+R (Стерео)',
+    earRightBtn: '🎧 R (Правий)',
+    sweepModuleTitle: '🎛️ Генератор та Логарифмічний Свіп',
+    sweepBadge: 'Чистий синус / Warble',
+    freqSliderLabel: 'Плавне регулювання частоти (15 Hz — 22 000 Hz)',
+    lblSignalType: 'Тип тестового сигналу',
+    optSine: 'Pure Sine (Чистий синус — стандарт)',
+    optWarble: 'Warble Tone (FM ±5% — для моніторів у кімнаті)',
+    optPulsed: 'Pulsed Sine (Пульсуючий 2.5 Гц — легше помітити поріг)',
+    optSineShort: 'Чистий синус (Pure Sine)',
+    optPulsedShort: 'Пульсуючий тон (Pulsed Sine)',
+    optWarbleShort: 'Warble Tone (Частотно-модульований)',
+    lblSweepSpeed: 'Швидкість авто-свіпу',
+    speedSlow: 'Повільна (Точний вимір — 35 сек)',
+    speedMed: 'Середня (Стандартна — 20 сек)',
+    speedFast: 'Швидка (Оглядова — 10 сек)',
+    btnGenStart: '▶ УВІМКНУТИ ТОН-ГЕНЕРАТОР',
+    btnGenStop: '⏸ ВИМКНУТИ ТОН-ГЕНЕРАТОР',
+    btnSweepStop: '⏸ ЗУПИНИТИ АВТО-СВІП',
+    btnLowSweep: '📉 Тест НЧ (120 Hz → 15 Hz)',
+    btnHighSweep: '📈 Тест ВЧ (8 kHz → 22 kHz)',
+    btnFullSweep: '🔄 Повний свіп (20 Hz → 22 kHz)',
+    captureHint: '💡 <strong>Як фіксувати межі:</strong> Під час свіпу або ручного руху повзунка натисніть кнопку нижче (або клавіші <kbd>L</kbd> / <kbd>H</kbd> / <kbd>Space</kbd>), щойно звук з’явиться чи зникне.',
+    btnMarkLow: '📍 Зафіксувати НИЖНЮ межу (НЧ) [L]',
+    btnMarkHigh: '📍 Зафіксувати ВЕРХНЮ межу (ВЧ) [H]',
+    limitsModuleTitle: '🎯 Зафіксований діапазон чутності',
+    btnResetLimits: 'Скинути заміри',
+    cardStereoTitle: '🎧 СТЕРЕО (L+R)',
+    cardLeftTitle: '◀ ЛІВЕ ВУХО (L)',
+    cardRightTitle: '▶ ПРАВЕ ВУХО (R)',
+    lblLowLim: 'Нижній поріг (Sub)',
+    lblHighLim: 'Верхній поріг (Air)',
+    lblBandwidth: 'Смуга пропускання',
+    octavesUnit: 'октав',
+    lblQuickPresets: 'Швидка перевірка контрольних частот:',
+    agModuleTitle: '📊 Побудова АЧХ чутливості слуху (Ліве та Праве вухо)',
+    btnLoadDemo: 'Завантажити приклад',
+    btnClearGraph: 'Очистити графік',
+    agModuleDesc: 'Для звукорежисера важливо знати не лише крайні межі (Гц), а й <strong>рівномірність чутності між Лівим і Правим вухом</strong> у ключових смугах еквалайзера. Оберіть частоту, плавно піднімайте рівень з <code>-75 dBFS</code> до моменту, коли ледь почуєте пульсуючий тон, і натисніть <strong>«Записати поріг»</strong>.',
+    agStepTitle: '🎚️ Покроковий вимір порогу',
+    agStepBadgePrefix: 'Частота',
+    lblActiveFreq: 'АКТИВНА ЧАСТОТА',
+    lblChannel: 'КАНАЛ',
+    lblTestLevel: 'РІВЕНЬ ТЕСТУ',
+    earLeftName: '◀ Ліве вухо (L)',
+    earRightName: '▶ Праве вухо (R)',
+    btnMeasureL: 'Вимірювати Ліве вухо (L)',
+    btnMeasureR: 'Вимірювати Праве вухо (R)',
+    lblRaiseLevel: 'Рівень тестового тону (піднімайте до ледь чутного звуку):',
+    btnAgPlay: '▶ Прослухати пульс-тон',
+    btnAgStop: '⏸ Зупинити пульс-тон',
+    btnRecordThreshold: '✅ Записати поріг та далі →',
+    agLegendL: '● Ліве вухо (L)',
+    agLegendR: '● Праве вухо (R)',
+    agLegendIso: '--- Еталон ISO',
+    quizModuleTitle: '🎓 Тренажер-Вікторина: Вгадай частоту на слух',
+    quizRoundPrefix: 'Раунд',
+    lblQuizDiff: 'Рівень складності',
+    diffBeg: 'Початковий (9 октавних частот ISO: 63 Hz – 16 kHz)',
+    diffInt: 'Середній (15 студійних смуг EQ: 31.5 Hz – 16 kHz)',
+    diffPro: 'Експерт (Довільна частота + точний пошук повзунком)',
+    lblMysteryFreq: 'ЗАГАДАНА ЧАСТОТА',
+    quizHintWaiting: 'Слухайте тон (та за потреби еталон 1 kHz) і оберіть частоту нижче',
+    btnQuizPlay: '🔊 СЛУХАТИ ЗАГАДАНИЙ ТОН',
+    btnQuizStop: '⏸ ЗУПИНИТИ ЗАГАДАНИЙ ТОН',
+    btnRefPlay: '🔔 Еталон 1 kHz (Референс)',
+    btnRefStop: '⏸ Вимкнути Еталон 1 kHz',
+    btnNextQuestion: '⏭ Наступне питання →',
+    lblPickFreq: 'Оберіть частоту, яка зараз звучить:',
+    lblYourGuess: 'Ваша відповідь на шкалі:',
+    btnSubmitGuess: '✅ Підтвердити відповідь',
+    quizInitialBanner: 'Оберіть рівень складності та натисніть <strong>«Слухати загаданий тон»</strong>, щоб розпочати тренування слуху.',
+    quizScoreTitle: '🏆 Результати студента та статистика',
+    btnNewQuizSeries: '🔄 Нова серія (10 питань)',
+    lblScore: 'Рахунок (Бали)',
+    lblStreak: 'Серія (Streak)',
+    lblAccuracy: 'Середня точність',
+    lblGrade: 'Оцінка',
+    lblHistoryTitle: 'Журнал відповідей поточної серії:',
+    thTarget: 'Загадано',
+    thAnswer: 'Відповідь',
+    thError: 'Похибка',
+    thPoints: 'Бали',
+    noAnswersYet: 'Ще немає відповідей у цій серії',
+    blindNoteMask: '🔒 Сліпий тест',
+    blindBandMask: '🔒 Вгадайте частоту',
+    blindCanvasText: '🎓 СЛІПИЙ РЕЖИМ ВІКТОРИНИ — СПЕКТРОАНАЛІЗАТОР ПРИХОВАНО ДО ВАШОЇ ВІДПОВІДІ',
+    reportModuleTitle: '🎚️ Аналітичний звіт для звукорежисера',
+    btnExportJson: '💾 Експорт JSON-профілю',
+    btnPrintReport: '🖨️ Друк / PDF Звіт',
+    reportAdviceHeading: '🔍 Вплив вашого діапазону на зведення та мастеринг',
+    reportSymmetryHeading: '⚖️ Аналіз L/R симетрії та вікові норми ISO 7029',
+    thAgeCat: 'Категорія / Досвід',
+    thTypHigh: 'Типовий верхній поріг ВЧ',
+    thMonNotes: 'Особливості моніторингу'
+  },
+  en: {
+    pageTitle: 'SonicRange Pro — Hearing Range & Audiogram Analyzer for Sound Engineers',
+    appSubtitle: 'Studio Hearing Frequency Range, L/R Audiometry & Ear Training Lab',
+    installAppBtn: '📲 INSTALL APP',
+    masterLevelLabel: 'MASTER LEVEL:',
+    panicMuteBtn: '⏹ PANIC MUTE (ESC)',
+    tabSweep: '1. Frequency Range (Sweep)',
+    tabAudiogram: '2. Studio Audiogram (L/R)',
+    tabQuiz: '3. Ear Training Quiz',
+    tabReport: '4. Engineer Profile & Report',
+    lblFreq: 'FREQUENCY',
+    lblNote: 'NOTE / OCTAVE',
+    lblMixBand: 'MIXING BAND',
+    lblWavelength: 'WAVELENGTH (20°C)',
+    lblMonitorChan: 'MONITOR CHANNEL:',
+    earLeftBtn: '🎧 L (Left)',
+    earBothBtn: '🎧 L+R (Stereo)',
+    earRightBtn: '🎧 R (Right)',
+    sweepModuleTitle: '🎛️ Tone Generator & Logarithmic Sweep',
+    sweepBadge: 'Pure Sine / Warble',
+    freqSliderLabel: 'Continuous Logarithmic Frequency Control (15 Hz — 22,000 Hz)',
+    lblSignalType: 'Test Signal Type',
+    optSine: 'Pure Sine (Standard Reference)',
+    optWarble: 'Warble Tone (FM ±5% — prevents room standing waves)',
+    optPulsed: 'Pulsed Sine (2.5 Hz Gate — easier threshold detection)',
+    optSineShort: 'Pure Sine',
+    optPulsedShort: 'Pulsed Sine',
+    optWarbleShort: 'Warble Tone (FM Modulated)',
+    lblSweepSpeed: 'Auto-Sweep Speed',
+    speedSlow: 'Slow (High Precision — 35 sec)',
+    speedMed: 'Medium (Standard — 20 sec)',
+    speedFast: 'Fast (Quick Check — 10 sec)',
+    btnGenStart: '▶ START TONE GENERATOR',
+    btnGenStop: '⏸ STOP TONE GENERATOR',
+    btnSweepStop: '⏸ STOP AUTO-SWEEP',
+    btnLowSweep: '📉 Sub/LF Sweep (120 Hz → 15 Hz)',
+    btnHighSweep: '📈 HF/Air Sweep (8 kHz → 22 kHz)',
+    btnFullSweep: '🔄 Full Sweep (20 Hz → 22 kHz)',
+    captureHint: '💡 <strong>How to mark limits:</strong> During a sweep or manual slider movement, click a button below (or press <kbd>L</kbd> / <kbd>H</kbd> / <kbd>Space</kbd>) the moment the tone appears or disappears.',
+    btnMarkLow: '📍 Mark LOWER Limit (LF) [L]',
+    btnMarkHigh: '📍 Mark UPPER Limit (HF) [H]',
+    limitsModuleTitle: '🎯 Recorded Hearing Range',
+    btnResetLimits: 'Reset Measurements',
+    cardStereoTitle: '🎧 STEREO (L+R)',
+    cardLeftTitle: '◀ LEFT EAR (L)',
+    cardRightTitle: '▶ RIGHT EAR (R)',
+    lblLowLim: 'Lower Limit (Sub)',
+    lblHighLim: 'Upper Limit (Air)',
+    lblBandwidth: 'Audible Bandwidth',
+    octavesUnit: 'octaves',
+    lblQuickPresets: 'Quick Reference Frequencies:',
+    agModuleTitle: '📊 Hearing Sensitivity Audiogram (Left vs Right Ear)',
+    btnLoadDemo: 'Load Demo Data',
+    btnClearGraph: 'Clear Graph',
+    agModuleDesc: 'For a sound engineer, knowing the <strong>balance between Left and Right ears</strong> across key EQ bands is essential. Select a frequency, slowly raise the level from <code>-75 dBFS</code> until the pulsed tone is barely audible, and click <strong>"Record Threshold"</strong>.',
+    agStepTitle: '🎚️ Step-by-Step Threshold Test',
+    agStepBadgePrefix: 'Band',
+    lblActiveFreq: 'ACTIVE FREQUENCY',
+    lblChannel: 'CHANNEL',
+    lblTestLevel: 'TEST LEVEL',
+    earLeftName: '◀ Left Ear (L)',
+    earRightName: '▶ Right Ear (R)',
+    btnMeasureL: 'Measure Left Ear (L)',
+    btnMeasureR: 'Measure Right Ear (R)',
+    lblRaiseLevel: 'Test tone level (raise until barely audible):',
+    btnAgPlay: '▶ Play Pulsed Tone',
+    btnAgStop: '⏸ Stop Pulsed Tone',
+    btnRecordThreshold: '✅ Record Threshold & Next →',
+    agLegendL: '● Left Ear (L)',
+    agLegendR: '● Right Ear (R)',
+    agLegendIso: '--- ISO Reference',
+    quizModuleTitle: '🎓 Ear Training Quiz: Guess the Frequency',
+    quizRoundPrefix: 'Round',
+    lblQuizDiff: 'Difficulty Level',
+    diffBeg: 'Beginner (9 ISO Octave Bands: 63 Hz – 16 kHz)',
+    diffInt: 'Intermediate (15 Studio EQ Bands: 31.5 Hz – 16 kHz)',
+    diffPro: 'Expert (Random Frequency + Continuous Slider)',
+    lblMysteryFreq: 'MYSTERY FREQUENCY',
+    quizHintWaiting: 'Listen to the mystery tone (and 1 kHz reference if needed) and pick your answer below',
+    btnQuizPlay: '🔊 PLAY MYSTERY TONE',
+    btnQuizStop: '⏸ STOP MYSTERY TONE',
+    btnRefPlay: '🔔 1 kHz Reference Tone',
+    btnRefStop: '⏸ Stop 1 kHz Reference',
+    btnNextQuestion: '⏭ Next Question →',
+    lblPickFreq: 'Select the frequency currently playing:',
+    lblYourGuess: 'Your frequency guess:',
+    btnSubmitGuess: '✅ Submit Guess',
+    quizInitialBanner: 'Choose a difficulty level and click <strong>"Play Mystery Tone"</strong> to start your ear training session.',
+    quizScoreTitle: '🏆 Student Scoreboard & Statistics',
+    btnNewQuizSeries: '🔄 New Series (10 Rounds)',
+    lblScore: 'Total Score',
+    lblStreak: 'Hot Streak',
+    lblAccuracy: 'Avg Accuracy',
+    lblGrade: 'Engineer Grade',
+    lblHistoryTitle: 'Current Session Attempt Log:',
+    thTarget: 'Target',
+    thAnswer: 'Your Guess',
+    thError: 'Error (Oct)',
+    thPoints: 'Points',
+    noAnswersYet: 'No attempts recorded in this series yet',
+    blindNoteMask: '🔒 Blind Test',
+    blindBandMask: '🔒 Guess the Band',
+    blindCanvasText: '🎓 BLIND QUIZ MODE ACTIVE — SPECTRUM ANALYZER HIDDEN UNTIL YOU ANSWER',
+    reportModuleTitle: '🎚️ Sound Engineer Analytical Report',
+    btnExportJson: '💾 Export JSON Profile',
+    btnPrintReport: '🖨️ Print / Save PDF',
+    reportAdviceHeading: '🔍 Mixing & Mastering Implications',
+    reportSymmetryHeading: '⚖️ L/R Symmetry & ISO 7029 Age Reference',
+    thAgeCat: 'Category / Experience',
+    thTypHigh: 'Typical Upper HF Limit',
+    thMonNotes: 'Monitoring Considerations'
+  }
+};
+
 const state = {
+  lang: 'uk',
   audioCtx: null,
   osc: null,
   lfoOsc: null,
@@ -54,19 +283,17 @@ const state = {
 
   currentFreq: 1000,
   masterDb: -18,
-  currentEar: 'both', // 'L' | 'R' | 'both'
-  toneMode: 'sine',   // 'sine' | 'warble' | 'pulsed'
+  currentEar: 'both',
+  toneMode: 'sine',
 
-  // Measured frequency limits per ear
   limits: {
     both: { low: null, high: null },
     L: { low: null, high: null },
     R: { low: null, high: null }
   },
 
-  // Audiogram state
   audiogram: {
-    activeFreqIndex: 6, // 1000 Hz default
+    activeFreqIndex: 6,
     activeEar: 'L',
     currentDb: -50,
     isPlayingAg: false,
@@ -76,9 +303,8 @@ const state = {
     }
   },
 
-  // Ear Training Quiz state
   quiz: {
-    difficulty: 'intermediate', // 'beginner' | 'intermediate' | 'pro'
+    difficulty: 'intermediate',
     timbre: 'sine',
     round: 1,
     maxRounds: 10,
@@ -93,12 +319,18 @@ const state = {
   }
 };
 
-// Load saved state from localStorage if available
+function t(key) {
+  return (I18N[state.lang] && I18N[state.lang][key]) || I18N.uk[key] || key;
+}
+
 function loadSavedState() {
   try {
     const raw = localStorage.getItem('sonicrange_pro_state_v1');
     if (!raw) return;
     const parsed = JSON.parse(raw);
+    if (parsed.lang && (parsed.lang === 'uk' || parsed.lang === 'en')) {
+      state.lang = parsed.lang;
+    }
     if (parsed.limits) state.limits = parsed.limits;
     if (parsed.audiogramPoints) state.audiogram.points = parsed.audiogramPoints;
   } catch (e) {
@@ -111,16 +343,39 @@ function saveState() {
     localStorage.setItem(
       'sonicrange_pro_state_v1',
       JSON.stringify({
+        lang: state.lang,
         limits: state.limits,
         audiogramPoints: state.audiogram.points
       })
     );
-  } catch (e) {
-    // ignore storage errors
-  }
+  } catch (e) {}
 }
 
-// Logarithmic slider conversion (0..1000 <-> 15..22000 Hz)
+function applyLanguage(lang) {
+  state.lang = lang === 'en' ? 'en' : 'uk';
+  document.documentElement.lang = state.lang;
+  document.title = t('pageTitle');
+
+  document.querySelectorAll('#langSelector button').forEach((btn) => {
+    btn.classList.toggle('active', btn.dataset.lang === state.lang);
+  });
+
+  document.querySelectorAll('[data-i18n]').forEach((el) => {
+    const key = el.getAttribute('data-i18n');
+    const val = t(key);
+    if (val) el.innerHTML = val;
+  });
+
+  saveState();
+  updateFrequencyReadouts();
+  updatePlaybackUI();
+  renderLimitCards();
+  updateAudiogramUI();
+  drawAudiogramCanvas();
+  renderQuizScoreboard();
+  renderSoundEngineerReport();
+}
+
 function sliderToFreq(sliderVal) {
   const norm = Number(sliderVal) / 1000;
   return MIN_FREQ * Math.pow(MAX_FREQ / MIN_FREQ, norm);
@@ -135,7 +390,6 @@ function dbToLinear(db) {
   return Math.pow(10, db / 20);
 }
 
-// Frequency to musical note & cents
 function freqToNoteInfo(freq) {
   const noteStrings = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B'];
   const midiFloat = 69 + 12 * Math.log2(freq / 440);
@@ -148,20 +402,19 @@ function freqToNoteInfo(freq) {
   return `${noteName}${octave} (${sign}¢)`;
 }
 
-// Mixing band classification for sound engineers
 function getMixingBand(freq) {
+  const isEn = state.lang === 'en';
   if (freq < 20) return 'INFRA-SUB (<20 Hz)';
-  if (freq < 60) return 'SUB-BASS (Суб-бас)';
-  if (freq < 250) return 'BASS (Фундамент / Тіло)';
-  if (freq < 500) return 'LOW MID (Нижня середина / Муть)';
-  if (freq < 2000) return 'MID (Основна середина / Фокус)';
-  if (freq < 4000) return 'UPPER MID (Атака / Розбірливість)';
-  if (freq < 6000) return 'PRESENCE (Присутність / Близькість)';
-  if (freq < 16000) return 'BRILLIANCE (Сибілянти / Яскравість)';
-  return 'AIR (Повітря / Ультра-ВЧ)';
+  if (freq < 60) return isEn ? 'SUB-BASS (20–60 Hz)' : 'SUB-BASS (Суб-бас)';
+  if (freq < 250) return isEn ? 'BASS (Body / Punch)' : 'BASS (Фундамент / Тіло)';
+  if (freq < 500) return isEn ? 'LOW MID (Warmth / Mud)' : 'LOW MID (Нижня середина)';
+  if (freq < 2000) return isEn ? 'MID (Core / Focal)' : 'MID (Основна середина)';
+  if (freq < 4000) return isEn ? 'UPPER MID (Attack / Bite)' : 'UPPER MID (Атака / Розбірливість)';
+  if (freq < 6000) return isEn ? 'PRESENCE (Clarity)' : 'PRESENCE (Присутність)';
+  if (freq < 16000) return isEn ? 'BRILLIANCE (Sibilance / Sparkle)' : 'BRILLIANCE (Сибілянти / Яскравість)';
+  return isEn ? 'AIR (Ultra-HF >16 kHz)' : 'AIR (Повітря / Ультра-ВЧ)';
 }
 
-// Initialize Web Audio Context & Graph
 function ensureAudioEngine() {
   if (!state.audioCtx) {
     const AudioContextClass = window.AudioContext || window.webkitAudioContext;
@@ -181,7 +434,6 @@ function ensureAudioEngine() {
     state.masterGain.connect(state.analyser);
     state.analyser.connect(state.audioCtx.destination);
 
-    // Update Sample Rate & Nyquist readouts
     const sr = state.audioCtx.sampleRate;
     document.getElementById('sampleRateDisplay').textContent = `${sr} Hz`;
     document.getElementById('nyquistDisplay').textContent = `${Math.floor(sr / 2)} Hz`;
@@ -198,7 +450,6 @@ function updatePanningNode() {
   state.panner.pan.setTargetAtTime(panVal, state.audioCtx.currentTime, 0.015);
 }
 
-// Start clean studio oscillator with anti-click envelope
 function startOscillator(customDb = null) {
   ensureAudioEngine();
   stopOscillatorImmediate();
@@ -216,29 +467,26 @@ function startOscillator(customDb = null) {
   state.toneGain = ctx.createGain();
   const targetAmp = customDb !== null ? dbToLinear(customDb) : 1.0;
 
-  // Anti-click soft fade-in
   state.toneGain.gain.setValueAtTime(0.00001, now);
   state.toneGain.gain.exponentialRampToValueAtTime(Math.max(0.0001, targetAmp), now + 0.04);
 
-  // Configure Warble Tone (FM modulation ±5% at 5 Hz to prevent room standing waves)
   if (state.toneMode === 'warble') {
     state.lfoOsc = ctx.createOscillator();
     state.lfoGain = ctx.createGain();
-    state.lfoOsc.frequency.value = 5.5; // 5.5 Hz warble
+    state.lfoOsc.frequency.value = 5.5;
     state.lfoGain.gain.value = state.currentFreq * 0.045;
     state.lfoOsc.connect(state.lfoGain);
     state.lfoGain.connect(state.osc.frequency);
     state.lfoOsc.start(now);
   }
 
-  // Configure Pulsed Tone (2.5 Hz gentle gate for threshold detection)
   if (state.toneMode === 'pulsed' || customDb !== null) {
     let gateOn = true;
     state.pulseIntervalId = setInterval(() => {
       if (!state.pulseGain || !state.audioCtx) return;
       gateOn = !gateOn;
-      const t = state.audioCtx.currentTime;
-      state.pulseGain.gain.setTargetAtTime(gateOn ? 1.0 : 0.02, t, 0.025);
+      const tNow = state.audioCtx.currentTime;
+      state.pulseGain.gain.setTargetAtTime(gateOn ? 1.0 : 0.02, tNow, 0.025);
     }, 220);
   }
 
@@ -317,8 +565,8 @@ function isQuizBlindMasked() {
 function updateFrequencyReadouts() {
   if (isQuizBlindMasked()) {
     document.getElementById('currentFreqReadout').innerHTML = `🔒 ??? <small>Hz</small>`;
-    document.getElementById('currentNoteReadout').textContent = '🔒 Сліпий тест';
-    document.getElementById('currentBandReadout').textContent = '🔒 Вгадайте частоту';
+    document.getElementById('currentNoteReadout').textContent = t('blindNoteMask');
+    document.getElementById('currentBandReadout').textContent = t('blindBandMask');
     document.getElementById('currentWavelengthReadout').textContent = '🔒 —';
     return;
   }
@@ -333,9 +581,11 @@ function updateFrequencyReadouts() {
   document.getElementById('currentBandReadout').textContent = getMixingBand(f);
 
   const wavelengthM = SPEED_OF_SOUND / f;
+  const unitM = state.lang === 'en' ? 'm' : 'м';
+  const unitCm = state.lang === 'en' ? 'cm' : 'см';
   const waveText = wavelengthM >= 1
-    ? `${wavelengthM.toFixed(2)} м`
-    : `${(wavelengthM * 100).toFixed(1)} см`;
+    ? `${wavelengthM.toFixed(2)} ${unitM}`
+    : `${(wavelengthM * 100).toFixed(1)} ${unitCm}`;
   document.getElementById('currentWavelengthReadout').textContent = waveText;
 }
 
@@ -349,38 +599,29 @@ function updatePlaybackUI() {
   if (state.isPlaying) {
     led.classList.add('active');
     toggleBtn.classList.add('playing');
-    toggleBtn.textContent = state.isSweeping
-      ? '⏸ ЗУПИНИТИ АВТО-СВІП'
-      : '⏸ ВИМКНУТИ ТОН-ГЕНЕРАТОР';
+    toggleBtn.textContent = state.isSweeping ? t('btnSweepStop') : t('btnGenStop');
   } else {
     led.classList.remove('active');
     toggleBtn.classList.remove('playing');
-    toggleBtn.textContent = '▶ УВІМКНУТИ ТОН-ГЕНЕРАТОР';
+    toggleBtn.textContent = t('btnGenStart');
   }
 
   if (agPlayBtn) {
-    agPlayBtn.textContent = state.audiogram.isPlayingAg
-      ? '⏸ Зупинити пульс-тон'
-      : '▶ Прослухати пульс-тон';
+    agPlayBtn.textContent = state.audiogram.isPlayingAg ? t('btnAgStop') : t('btnAgPlay');
     agPlayBtn.classList.toggle('playing', state.audiogram.isPlayingAg);
   }
 
   if (quizPlayBtn) {
-    quizPlayBtn.textContent = state.quiz.isPlayingMystery
-      ? '⏸ ЗУПИНИТИ ЗАГАДАНИЙ ТОН'
-      : '🔊 СЛУХАТИ ЗАГАДАНИЙ ТОН';
+    quizPlayBtn.textContent = state.quiz.isPlayingMystery ? t('btnQuizStop') : t('btnQuizPlay');
     quizPlayBtn.classList.toggle('playing', state.quiz.isPlayingMystery);
   }
 
   if (quizRefBtn) {
-    quizRefBtn.textContent = state.quiz.isPlayingRef
-      ? '⏸ Вимкнути Еталон 1 kHz'
-      : '🔔 Еталон 1 kHz (Референс)';
+    quizRefBtn.textContent = state.quiz.isPlayingRef ? t('btnRefStop') : t('btnRefPlay');
     quizRefBtn.classList.toggle('playing', state.quiz.isPlayingRef);
   }
 }
 
-// Automated Logarithmic Frequency Sweep
 function startFrequencySweep(startFreq, endFreq) {
   const speedMap = { slow: 35000, medium: 20000, fast: 10000 };
   const speedSelect = document.getElementById('sweepSpeedSelect').value;
@@ -397,8 +638,6 @@ function startFrequencySweep(startFreq, endFreq) {
     if (!state.isSweeping || !state.isPlaying) return;
     const elapsed = now - startTime;
     const progress = Math.min(1, elapsed / durationMs);
-
-    // Exponential interpolation for constant octave/sec perception
     const current = startFreq * Math.pow(endFreq / startFreq, progress);
     setFrequency(current, true);
 
@@ -413,19 +652,18 @@ function startFrequencySweep(startFreq, endFreq) {
   state.sweepRafId = requestAnimationFrame(step);
 }
 
-// Record Lower or Upper Hearing Limit for Current Ear
 function recordLimit(boundType) {
   const ear = state.currentEar;
   const freqRounded = Math.round(state.currentFreq * 10) / 10;
   state.limits[ear][boundType] = freqRounded;
 
-  // If measured in stereo and L/R are empty, keep stereo independent
   saveState();
   renderLimitCards();
   renderSoundEngineerReport();
 }
 
 function renderLimitCards() {
+  const octUnit = t('octavesUnit');
   ['both', 'L', 'R'].forEach((ear) => {
     const low = state.limits[ear].low;
     const high = state.limits[ear].high;
@@ -442,8 +680,8 @@ function renderLimitCards() {
     if (low !== null && high !== null && high > low) {
       const bw = Math.round(high - low);
       const octaves = Math.log2(high / low).toFixed(2);
-      bwEl.textContent = `${bw.toLocaleString('uk-UA')} Hz`;
-      octEl.textContent = `${octaves} октав`;
+      bwEl.textContent = `${bw.toLocaleString()} Hz`;
+      octEl.textContent = `${octaves} ${octUnit}`;
 
       const leftPct = Math.max(0, Math.min(100, freqToSlider(low) / 10));
       const rightPct = Math.max(0, Math.min(100, freqToSlider(high) / 10));
@@ -451,19 +689,17 @@ function renderLimitCards() {
       barEl.style.width = `${Math.max(2, rightPct - leftPct)}%`;
     } else {
       bwEl.textContent = '— Hz';
-      octEl.textContent = '— октав';
+      octEl.textContent = `— ${octUnit}`;
       barEl.style.left = '0%';
       barEl.style.width = '0%';
     }
   });
 
-  // Highlight active ear card
   document.querySelectorAll('.ear-result-card').forEach((card) => {
     card.classList.toggle('active-card', card.dataset.cardEar === state.currentEar);
   });
 }
 
-// Real-time Spectrum & Frequency Marker Visualizer
 function initSpectrumVisualizer() {
   const canvas = document.getElementById('spectrumCanvas');
   const ctx = canvas.getContext('2d');
@@ -476,7 +712,6 @@ function initSpectrumVisualizer() {
     const h = canvas.height;
     ctx.clearRect(0, 0, w, h);
 
-    // Background grid lines (logarithmic frequencies)
     const gridFreqs = [20, 50, 100, 250, 500, 1000, 2000, 4000, 8000, 16000, 20000];
     ctx.strokeStyle = '#182232';
     ctx.lineWidth = 1;
@@ -497,12 +732,11 @@ function initSpectrumVisualizer() {
       ctx.fillStyle = 'rgba(255, 170, 0, 0.85)';
       ctx.font = 'bold 13px monospace';
       ctx.textAlign = 'center';
-      ctx.fillText('🎓 СЛІПИЙ РЕЖИМ ВІКТОРИНИ — СПЕКТРОАНАЛІЗАТОР ПРИХОВАНО ДО ВАШОЇ ВІДПОВІДІ', w / 2, h / 2);
+      ctx.fillText(t('blindCanvasText'), w / 2, h / 2);
       ctx.textAlign = 'left';
       return;
     }
 
-    // Draw recorded range shaded zone for current ear
     const activeLim = state.limits[state.currentEar];
     if (activeLim.low && activeLim.high && activeLim.high > activeLim.low) {
       const x1 = (freqToSlider(activeLim.low) / 1000) * w;
@@ -511,7 +745,6 @@ function initSpectrumVisualizer() {
       ctx.fillRect(x1, 0, x2 - x1, h);
     }
 
-    // Draw FFT spectrum if audio is active
     if (state.analyser && state.isPlaying) {
       state.analyser.getByteFrequencyData(freqData);
       const nyquist = state.audioCtx.sampleRate / 2;
@@ -533,7 +766,6 @@ function initSpectrumVisualizer() {
       ctx.stroke();
     }
 
-    // Draw current frequency cursor line
     const cursorX = (freqToSlider(state.currentFreq) / 1000) * w;
     ctx.strokeStyle = state.isPlaying ? '#18e299' : '#ffaa00';
     ctx.lineWidth = 2;
@@ -542,7 +774,6 @@ function initSpectrumVisualizer() {
     ctx.lineTo(cursorX, h);
     ctx.stroke();
 
-    // Draw glowing dot on cursor
     ctx.fillStyle = state.isPlaying ? '#18e299' : '#ffaa00';
     ctx.beginPath();
     ctx.arc(cursorX, 22, 5, 0, Math.PI * 2);
@@ -593,11 +824,11 @@ function updateAudiogramUI() {
   const ear = state.audiogram.activeEar;
 
   document.getElementById('audiogramStepBadge').textContent =
-    `Частота ${idx + 1} / ${AUDIOGRAM_FREQS.length}`;
+    `${t('agStepBadgePrefix')} ${idx + 1} / ${AUDIOGRAM_FREQS.length}`;
   document.getElementById('agActiveFreq').textContent =
     freq >= 1000 ? `${freq / 1000} kHz (${freq} Hz)` : `${freq} Hz`;
   document.getElementById('agActiveEar').textContent =
-    ear === 'L' ? '◀ Ліве вухо (L)' : '▶ Праве вухо (R)';
+    ear === 'L' ? t('earLeftName') : t('earRightName');
   document.getElementById('agCurrentDb').textContent = `${state.audiogram.currentDb} dBFS`;
 
   const buttons = document.querySelectorAll('#audiogramFreqButtons .ag-freq-btn');
@@ -641,12 +872,11 @@ function drawAudiogramCanvas() {
 
   ctx.clearRect(0, 0, w, h);
 
-  // dB grid (-80 dBFS at bottom to -5 dBFS at top)
   const dbLevels = [-80, -70, -60, -50, -40, -30, -20, -10];
   ctx.font = '11px monospace';
 
   dbLevels.forEach((db) => {
-    const normY = (db - -5) / (-80 - -5); // -5 at top (0), -80 at bottom (1)
+    const normY = (db - -5) / (-80 - -5);
     const y = padT + normY * plotH;
     ctx.strokeStyle = '#1b2434';
     ctx.beginPath();
@@ -658,7 +888,6 @@ function drawAudiogramCanvas() {
     ctx.fillText(`${db} dB`, 8, y + 4);
   });
 
-  // Frequency columns
   AUDIOGRAM_FREQS.forEach((freq, i) => {
     const x = padL + (i / (AUDIOGRAM_FREQS.length - 1)) * plotW;
     ctx.strokeStyle = i === state.audiogram.activeFreqIndex ? '#2d4466' : '#161e2c';
@@ -672,7 +901,6 @@ function drawAudiogramCanvas() {
     ctx.fillText(label, x - 12, h - 16);
   });
 
-  // Draw Reference Normal Threshold Curve (dashed)
   ctx.save();
   ctx.setLineDash([5, 5]);
   ctx.strokeStyle = 'rgba(255, 170, 0, 0.4)';
@@ -689,7 +917,6 @@ function drawAudiogramCanvas() {
   ctx.stroke();
   ctx.restore();
 
-  // Helper to draw L and R ear curves
   function drawEarCurve(earKey, color) {
     const pts = [];
     AUDIOGRAM_FREQS.forEach((freq, i) => {
@@ -724,141 +951,12 @@ function drawAudiogramCanvas() {
   drawEarCurve('L', '#38bdf8');
   drawEarCurve('R', '#fb7185');
 
-  // Legend in top-right
   ctx.fillStyle = '#38bdf8';
-  ctx.fillText('● Ліве вухо (L)', w - 340, 18);
+  ctx.fillText(t('agLegendL'), w - 350, 18);
   ctx.fillStyle = '#fb7185';
-  ctx.fillText('● Праве вухо (R)', w - 220, 18);
+  ctx.fillText(t('agLegendR'), w - 230, 18);
   ctx.fillStyle = '#ffaa00';
-  ctx.fillText('--- Еталон ISO', w - 110, 18);
-}
-
-// ==========================================
-// TAB 3: SOUND ENGINEER ANALYTICS & REPORT
-// ==========================================
-function renderSoundEngineerReport() {
-  const bestLow =
-    state.limits.both.low ??
-    state.limits.L.low ??
-    state.limits.R.low ??
-    24;
-  const bestHigh =
-    state.limits.both.high ??
-    state.limits.L.high ??
-    state.limits.R.high ??
-    16800;
-
-  const octaves = bestHigh > bestLow ? Math.log2(bestHigh / bestLow).toFixed(2) : '—';
-  const airCoveragePct = Math.min(100, Math.max(0, Math.round(((bestHigh - 10000) / 10000) * 100)));
-
-  const summaryGrid = document.getElementById('reportSummaryGrid');
-  summaryGrid.innerHTML = `
-    <div class="summary-stat">
-      <span class="s-title">Робочий діапазон частот</span>
-      <span class="s-value">${bestLow.toFixed(1)} Hz – ${Math.round(bestHigh)} Hz</span>
-      <span class="s-sub">Нижня та верхня межа чутності</span>
-    </div>
-    <div class="summary-stat">
-      <span class="s-title">Охоплення в октавах</span>
-      <span class="s-value">${octaves} октав</span>
-      <span class="s-sub">Зі ~10.0 теоретичних октав (20Hz–20kHz)</span>
-    </div>
-    <div class="summary-stat">
-      <span class="s-title">Контроль Air-діапазону (10k–20k)</span>
-      <span class="s-value">${airCoveragePct}%</span>
-      <span class="s-sub">${bestHigh >= 16500 ? 'Висока роздільна здатність ВЧ' : 'Потребує візуального аналізатора ВЧ'}</span>
-    </div>
-    <div class="summary-stat">
-      <span class="s-title">Контроль Sub-Bass (<40 Hz)</span>
-      <span class="s-value">${bestLow <= 28 ? 'Повний' : bestLow <= 42 ? 'Помірний' : 'Обмежений'}</span>
-      <span class="s-sub">Нижній поріг: ${bestLow.toFixed(1)} Hz</span>
-    </div>
-  `;
-
-  // Generate tailored mixing & mastering recommendations
-  const adviceList = document.getElementById('engineeringAdviceList');
-  const tips = [];
-
-  if (bestHigh >= 17000) {
-    tips.push({
-      cls: 'good',
-      text: `<strong>Відмінний контроль Brilliance & Air (до ${Math.round(bestHigh)} Hz):</strong> Ви чуєте ультрависокі гармоніки та роботу чистих High-Shelf еквалайзерів на 12–16 кГц без ризику випадково переяскравити мікс.`
-    });
-  } else if (bestHigh >= 14000) {
-    tips.push({
-      cls: 'good',
-      text: `<strong>Стандартний професійний діапазон ВЧ (до ${Math.round(bestHigh)} Hz):</strong> Ви повністю контролюєте зону сибілянтів (5–9 кГц) та повітря до 14+ кГц. Під час роботи з полицями вище 15 кГц (Air EQ) звіряйтеся зі спектроаналізатором (наприклад, FabFilter Pro-Q або Voxengo SPAN).`
-    });
-  } else {
-    tips.push({
-      cls: 'warn',
-      text: `<strong>Обережність із High-Shelf вище ${Math.round(bestHigh)} Hz:</strong> Через спад чутливості вище цієї межі виникає спокуса надмірно піднімати верхні частоти при зведенні. Використовуйте референс-треки та обрізний Low-Pass або візуальний контроль спектра у зоні 12–20 кГц.`
-    });
-  }
-
-  if (bestLow <= 25) {
-    tips.push({
-      cls: 'good',
-      text: `<strong>Глибокий моніторинг Sub-Bass (${bestLow.toFixed(1)} Hz):</strong> Ваші навушники/монітори та слух дозволяють контролювати інфра-низ і фундамент бочки (Kick) та 808-басу. Не забувайте перевіряти Low-Cut фільтри на 20–30 Гц.`
-    });
-  } else {
-    tips.push({
-      cls: 'warn',
-      text: `<strong>Нижній поріг ${bestLow.toFixed(1)} Hz:</strong> Ймовірно, поточна акустика або навушники мають спад на суб-басі. При роботі з саб-басом (20–45 Hz) використовуйте гармонічне насичення або перевіряйте рівень сабу за аналізатором.`
-    });
-  }
-
-  tips.push({
-    cls: '',
-    text: `<strong>Оптимальний рівень моніторингу (Криві рівної гучності ISO 226):</strong> Максимальна лінійність людського слуху досягається при гучності моніторингу <strong>78–83 dB SPL (C-weighted)</strong>. На занадто тихій гучності вухо гірше чує суб-бас та верх, а вище 85 dB SPL швидко настає слухова втома (Ear Fatigue).`
-  });
-
-  adviceList.innerHTML = tips.map((t) => `<li class="${t.cls}">${t.text}</li>`).join('');
-
-  // Calculate L/R symmetry diagnostics
-  const asymBox = document.getElementById('asymmetryReportBox');
-  const lHigh = state.limits.L.high;
-  const rHigh = state.limits.R.high;
-
-  let asymHtml = '';
-  if (lHigh && rHigh) {
-    const diffHz = Math.abs(lHigh - rHigh);
-    const strongerEar = lHigh > rHigh ? 'Ліве (L)' : 'Праве (R)';
-    asymHtml += `<p style="font-size:0.85rem; margin-bottom:8px;">
-      <strong>Порівняння ВЧ-порогу L/R:</strong> Ліве вухо = <code>${Math.round(lHigh)} Hz</code>, Праве вухо = <code>${Math.round(rHigh)} Hz</code> (Різниця: <code>${Math.round(diffHz)} Hz</code>).
-      ${diffHz > 1200 ? `<br><span style="color:var(--accent-amber)">⚠️ Помітна асиметрія ВЧ (сильніше ${strongerEar} вухо). Рекомендується періодично міняти місцями канали (L/R Swap) або перевіряти мікс у режимі MONO під час панорамування хай-хетів та гітар.</span>` : `<br><span style="color:var(--accent-green)">✅ Відмінна симетрія верхньої межі між лівим та правим вухом.</span>`}
-    </p>`;
-  } else {
-    asymHtml += `<p style="font-size:0.83rem; color:var(--text-muted);">
-      Щоб отримати точний аналіз симетрії L/R для панорамування міксу, проведіть заміри окремо для <strong>Лівого (L)</strong> та <strong>Правого (R)</strong> каналу у вкладці 1 або 2.
-    </p>`;
-  }
-
-  // Check audiogram mid/high differences
-  const diffs = [];
-  AUDIOGRAM_FREQS.forEach((f) => {
-    const lv = state.audiogram.points.L[f];
-    const rv = state.audiogram.points.R[f];
-    if (typeof lv === 'number' && typeof rv === 'number') {
-      const d = Math.abs(lv - rv);
-      if (d >= 5) diffs.push(`${f >= 1000 ? f / 1000 + 'kHz' : f + 'Hz'} (Δ ${d} dB)`);
-    }
-  });
-
-  if (diffs.length > 0) {
-    asymHtml += `<p style="font-size:0.83rem; color:var(--accent-amber); margin-top:6px;">
-      <strong>Зони розбіжності порогу >5 dB за аудіограмою:</strong> ${diffs.join(', ')}. Враховуйте це при оцінці стереообразу.
-    </p>`;
-  }
-
-  asymBox.innerHTML = asymHtml;
-}
-
-function updateEarButtonsUI() {
-  document.querySelectorAll('#earSelector button').forEach((btn) => {
-    btn.classList.toggle('active', btn.dataset.ear === state.currentEar);
-  });
-  renderLimitCards();
+  ctx.fillText(t('agLegendIso'), w - 115, 18);
 }
 
 // ==========================================
@@ -900,14 +998,12 @@ function pickNewQuizQuestion(autoPlay = false) {
     }
     q.secretFreq = candidate;
   } else {
-    // Pro mode: random logarithmic frequency between 35 Hz and 15500 Hz
     const minLog = Math.log(35);
     const maxLog = Math.log(15500);
     const randFreq = Math.exp(minLog + Math.random() * (maxLog - minLog));
     q.secretFreq = Math.round(randFreq);
   }
 
-  // Update UI containers for difficulty mode
   const choicesBox = document.getElementById('quizChoicesContainer');
   const proSliderBox = document.getElementById('quizProSliderContainer');
   if (q.difficulty === 'pro') {
@@ -919,14 +1015,12 @@ function pickNewQuizQuestion(autoPlay = false) {
     renderQuizOptionButtons();
   }
 
-  // Reset mystery display
   const mysteryBox = document.getElementById('quizMysteryDisplay');
   mysteryBox.classList.remove('revealed');
   document.getElementById('quizSecretFreqText').textContent = '??? Hz';
-  document.getElementById('quizSecretHintText').textContent =
-    'Слухайте тон (та за потреби еталон 1 kHz) і оберіть частоту нижче';
+  document.getElementById('quizSecretHintText').textContent = t('quizHintWaiting');
   document.getElementById('quizRoundBadge').textContent =
-    `Раунд ${Math.min(q.round, q.maxRounds)} / ${q.maxRounds}`;
+    `${t('quizRoundPrefix')} ${Math.min(q.round, q.maxRounds)} / ${q.maxRounds}`;
 
   updateFrequencyReadouts();
 
@@ -977,33 +1071,22 @@ function playQuizReferenceTone() {
 
 function submitQuizGuess(guessedFreq, clickedBtn = null) {
   const q = state.quiz;
-  if (q.revealed) return; // Already answered this round
+  if (q.revealed) return;
 
   q.revealed = true;
   const secret = q.secretFreq;
   const octaveError = Math.abs(Math.log2(guessedFreq / secret));
 
-  // Calculate score (0..100) based on octave proximity
   let pts = 0;
-  if (octaveError < 0.05) {
-    pts = 100;
-  } else if (octaveError <= 0.36) {
-    pts = 85;
-  } else if (octaveError <= 0.55) {
-    pts = 70;
-  } else if (octaveError <= 1.02) {
-    pts = 45;
-  } else if (octaveError <= 1.5) {
-    pts = 20;
-  } else {
-    pts = 0;
-  }
+  if (octaveError < 0.05) pts = 100;
+  else if (octaveError <= 0.36) pts = 85;
+  else if (octaveError <= 0.55) pts = 70;
+  else if (octaveError <= 1.02) pts = 45;
+  else if (octaveError <= 1.5) pts = 20;
+  else pts = 0;
 
-  if (pts >= 85) {
-    q.streak += 1;
-  } else {
-    q.streak = 0;
-  }
+  if (pts >= 85) q.streak += 1;
+  else q.streak = 0;
 
   q.score += pts;
   q.history.push({
@@ -1014,41 +1097,45 @@ function submitQuizGuess(guessedFreq, clickedBtn = null) {
     pts
   });
 
-  // Reveal secret frequency on Mystery Deck & top readouts
   setFrequency(secret, true);
   const mysteryBox = document.getElementById('quizMysteryDisplay');
   mysteryBox.classList.add('revealed');
   document.getElementById('quizSecretFreqText').textContent =
     `${formatFreqLabel(secret)} (${Math.round(secret)} Hz)`;
   document.getElementById('quizSecretHintText').textContent =
-    `${getMixingBand(secret)} • Нота: ${freqToNoteInfo(secret)}`;
+    `${getMixingBand(secret)} • ${freqToNoteInfo(secret)}`;
 
-  // Highlight multiple-choice buttons if applicable
   document.querySelectorAll('#quizOptionsGrid .quiz-opt-btn').forEach((btn) => {
     const bf = parseFloat(btn.dataset.freq);
     btn.disabled = true;
-    if (bf === secret) {
-      btn.classList.add('correct');
-    } else if (btn === clickedBtn && bf !== secret) {
-      btn.classList.add('wrong');
-    }
+    if (bf === secret) btn.classList.add('correct');
+    else if (btn === clickedBtn && bf !== secret) btn.classList.add('wrong');
   });
 
-  // Update Feedback Banner
   const banner = document.getElementById('quizFeedbackBanner');
   banner.className = 'quiz-feedback-banner';
+  const isEn = state.lang === 'en';
+
   if (pts === 100) {
     banner.classList.add('good');
-    banner.innerHTML = `🎯 <strong>Бездоганне влучання (+100 балів)!</strong> Це дійсно <code>${formatFreqLabel(secret)}</code> (${getMixingBand(secret)}). Натисніть «Наступне питання →» для продовження.`;
+    banner.innerHTML = isEn
+      ? `🎯 <strong>Spot-on (+100 pts)!</strong> That was <code>${formatFreqLabel(secret)}</code> (${getMixingBand(secret)}). Click "Next Question →" to continue.`
+      : `🎯 <strong>Бездоганне влучання (+100 балів)!</strong> Це дійсно <code>${formatFreqLabel(secret)}</code> (${getMixingBand(secret)}). Натисніть «Наступне питання →» для продовження.`;
   } else if (pts >= 70) {
     banner.classList.add('good');
-    banner.innerHTML = `👍 <strong>Дуже близько (+${pts} балів)!</strong> Ви обрали <code>${formatFreqLabel(guessedFreq)}</code>, а звучало <code>${formatFreqLabel(secret)}</code> (похибка: ${octaveError.toFixed(2)} октави).`;
+    banner.innerHTML = isEn
+      ? `👍 <strong>Very close (+${pts} pts)!</strong> You guessed <code>${formatFreqLabel(guessedFreq)}</code>, actual was <code>${formatFreqLabel(secret)}</code> (error: ${octaveError.toFixed(2)} oct).`
+      : `👍 <strong>Дуже близько (+${pts} балів)!</strong> Ви обрали <code>${formatFreqLabel(guessedFreq)}</code>, а звучало <code>${formatFreqLabel(secret)}</code> (похибка: ${octaveError.toFixed(2)} октави).`;
   } else if (pts >= 40) {
     banner.classList.add('warn');
-    banner.innerHTML = `⚠️ <strong>Похибка в межах октави (+${pts} балів):</strong> Ваша відповідь <code>${formatFreqLabel(guessedFreq)}</code>, правильна частота — <code>${formatFreqLabel(secret)}</code> (${octaveError.toFixed(2)} октави).`;
+    banner.innerHTML = isEn
+      ? `⚠️ <strong>Within an octave (+${pts} pts):</strong> You guessed <code>${formatFreqLabel(guessedFreq)}</code>, actual was <code>${formatFreqLabel(secret)}</code> (${octaveError.toFixed(2)} oct).`
+      : `⚠️ <strong>Похибка в межах октави (+${pts} балів):</strong> Ваша відповідь <code>${formatFreqLabel(guessedFreq)}</code>, правильна частота — <code>${formatFreqLabel(secret)}</code> (${octaveError.toFixed(2)} октави).`;
   } else {
     banner.classList.add('bad');
-    banner.innerHTML = `❌ <strong>Промах (+${pts} балів):</strong> Ви обрали <code>${formatFreqLabel(guessedFreq)}</code>, а насправді звучало <code>${formatFreqLabel(secret)}</code> (різниця ${octaveError.toFixed(2)} октави). Послухайте еталон 1 kHz для калібрування слуху!`;
+    banner.innerHTML = isEn
+      ? `❌ <strong>Missed (+${pts} pts):</strong> You picked <code>${formatFreqLabel(guessedFreq)}</code>, actual was <code>${formatFreqLabel(secret)}</code> (${octaveError.toFixed(2)} oct off). Use the 1 kHz Reference to calibrate!`
+      : `❌ <strong>Промах (+${pts} балів):</strong> Ви обрали <code>${formatFreqLabel(guessedFreq)}</code>, а насправді звучало <code>${formatFreqLabel(secret)}</code> (різниця ${octaveError.toFixed(2)} октави). Послухайте еталон 1 kHz!`;
   }
 
   if (q.round < q.maxRounds) {
@@ -1063,6 +1150,7 @@ function renderQuizScoreboard() {
   const count = q.history.length;
   const maxPossible = Math.max(1, count) * 100;
   const avgAccuracy = count > 0 ? Math.round((q.score / maxPossible) * 100) : null;
+  const isEn = state.lang === 'en';
 
   document.getElementById('quizTotalScore').textContent = `${q.score} / ${q.maxRounds * 100}`;
   document.getElementById('quizStreakVal').textContent = `${q.streak} 🔥`;
@@ -1071,20 +1159,21 @@ function renderQuizScoreboard() {
 
   let grade = '—';
   if (avgAccuracy !== null) {
-    if (avgAccuracy >= 90) grade = 'A+ (Золоті вуха)';
-    else if (avgAccuracy >= 78) grade = 'A (Відмінно)';
-    else if (avgAccuracy >= 65) grade = 'B (Добре)';
-    else if (avgAccuracy >= 50) grade = 'C (Задовільно)';
-    else grade = 'Потрібна практика';
+    if (avgAccuracy >= 90) grade = isEn ? 'A+ (Golden Ears)' : 'A+ (Золоті вуха)';
+    else if (avgAccuracy >= 78) grade = isEn ? 'A (Excellent)' : 'A (Відмінно)';
+    else if (avgAccuracy >= 65) grade = isEn ? 'B (Good)' : 'B (Добре)';
+    else if (avgAccuracy >= 50) grade = isEn ? 'C (Fair)' : 'C (Задовільно)';
+    else grade = isEn ? 'Needs Practice' : 'Потрібна практика';
   }
   document.getElementById('quizGradeVal').textContent = grade;
 
   const tbody = document.getElementById('quizHistoryBody');
   if (count === 0) {
-    tbody.innerHTML = `<tr><td colspan="5" style="text-align:center; color:var(--text-muted);">Ще немає відповідей у цій серії</td></tr>`;
+    tbody.innerHTML = `<tr><td colspan="5" style="text-align:center; color:var(--text-muted);">${t('noAnswersYet')}</td></tr>`;
     return;
   }
 
+  const octShort = isEn ? 'oct' : 'окт.';
   tbody.innerHTML = q.history
     .slice()
     .reverse()
@@ -1094,7 +1183,7 @@ function renderQuizScoreboard() {
         <td>#${item.round}</td>
         <td><strong>${formatFreqLabel(item.secret)}</strong></td>
         <td>${formatFreqLabel(item.guess)}</td>
-        <td>${item.octaveError.toFixed(2)} окт.</td>
+        <td>${item.octaveError.toFixed(2)} ${octShort}</td>
         <td style="color:${item.pts >= 80 ? 'var(--accent-green)' : item.pts >= 45 ? 'var(--accent-amber)' : 'var(--accent-red)'}; font-weight:700;">+${item.pts}</td>
       </tr>
     `
@@ -1111,7 +1200,200 @@ function resetQuizSession() {
   renderQuizScoreboard();
   const banner = document.getElementById('quizFeedbackBanner');
   banner.className = 'quiz-feedback-banner';
-  banner.innerHTML = `Нову серію з 10 питань розпочато! Натисніть <strong>«Слухати загаданий тон»</strong>.`;
+  banner.innerHTML = t('quizInitialBanner');
+}
+
+// ==========================================
+// TAB 4: SOUND ENGINEER ANALYTICS & REPORT
+// ==========================================
+function renderSoundEngineerReport() {
+  const isEn = state.lang === 'en';
+  const bestLow =
+    state.limits.both.low ??
+    state.limits.L.low ??
+    state.limits.R.low ??
+    24;
+  const bestHigh =
+    state.limits.both.high ??
+    state.limits.L.high ??
+    state.limits.R.high ??
+    16800;
+
+  const octaves = bestHigh > bestLow ? Math.log2(bestHigh / bestLow).toFixed(2) : '—';
+  const airCoveragePct = Math.min(100, Math.max(0, Math.round(((bestHigh - 10000) / 10000) * 100)));
+
+  const summaryGrid = document.getElementById('reportSummaryGrid');
+  summaryGrid.innerHTML = isEn
+    ? `
+    <div class="summary-stat">
+      <span class="s-title">Working Frequency Range</span>
+      <span class="s-value">${bestLow.toFixed(1)} Hz – ${Math.round(bestHigh)} Hz</span>
+      <span class="s-sub">Lower and upper hearing thresholds</span>
+    </div>
+    <div class="summary-stat">
+      <span class="s-title">Octave Span</span>
+      <span class="s-value">${octaves} octaves</span>
+      <span class="s-sub">Out of ~10.0 theoretical octaves (20Hz–20kHz)</span>
+    </div>
+    <div class="summary-stat">
+      <span class="s-title">Air Band Control (10k–20k)</span>
+      <span class="s-value">${airCoveragePct}%</span>
+      <span class="s-sub">${bestHigh >= 16500 ? 'High HF resolution' : 'Use visual spectrum analyzer above 15 kHz'}</span>
+    </div>
+    <div class="summary-stat">
+      <span class="s-title">Sub-Bass Control (<40 Hz)</span>
+      <span class="s-value">${bestLow <= 28 ? 'Full' : bestLow <= 42 ? 'Moderate' : 'Limited'}</span>
+      <span class="s-sub">Lower limit: ${bestLow.toFixed(1)} Hz</span>
+    </div>
+  `
+    : `
+    <div class="summary-stat">
+      <span class="s-title">Робочий діапазон частот</span>
+      <span class="s-value">${bestLow.toFixed(1)} Hz – ${Math.round(bestHigh)} Hz</span>
+      <span class="s-sub">Нижня та верхня межа чутності</span>
+    </div>
+    <div class="summary-stat">
+      <span class="s-title">Охоплення в октавах</span>
+      <span class="s-value">${octaves} октав</span>
+      <span class="s-sub">Зі ~10.0 теоретичних октав (20Hz–20kHz)</span>
+    </div>
+    <div class="summary-stat">
+      <span class="s-title">Контроль Air-діапазону (10k–20k)</span>
+      <span class="s-value">${airCoveragePct}%</span>
+      <span class="s-sub">${bestHigh >= 16500 ? 'Висока роздільна здатність ВЧ' : 'Потребує візуального аналізатора ВЧ'}</span>
+    </div>
+    <div class="summary-stat">
+      <span class="s-title">Контроль Sub-Bass (<40 Hz)</span>
+      <span class="s-value">${bestLow <= 28 ? 'Повний' : bestLow <= 42 ? 'Помірний' : 'Обмежений'}</span>
+      <span class="s-sub">Нижній поріг: ${bestLow.toFixed(1)} Hz</span>
+    </div>
+  `;
+
+  const adviceList = document.getElementById('engineeringAdviceList');
+  const tips = [];
+
+  if (bestHigh >= 17000) {
+    tips.push({
+      cls: 'good',
+      text: isEn
+        ? `<strong>Excellent Brilliance & Air Control (up to ${Math.round(bestHigh)} Hz):</strong> You can hear ultra-high harmonics and High-Shelf EQ boosts at 12–16 kHz directly without over-brightening the mix.`
+        : `<strong>Відмінний контроль Brilliance & Air (до ${Math.round(bestHigh)} Hz):</strong> Ви чуєте ультрависокі гармоніки та роботу чистих High-Shelf еквалайзерів на 12–16 кГц без ризику випадково переяскравити мікс.`
+    });
+  } else if (bestHigh >= 14000) {
+    tips.push({
+      cls: 'good',
+      text: isEn
+        ? `<strong>Standard Professional HF Range (up to ${Math.round(bestHigh)} Hz):</strong> Full control over sibilance (5–9 kHz) and air up to 14+ kHz. Cross-check ultra-HF shelves (>15 kHz) with a spectrum analyzer (e.g. FabFilter Pro-Q or Voxengo SPAN).`
+        : `<strong>Стандартний професійний діапазон ВЧ (до ${Math.round(bestHigh)} Hz):</strong> Ви повністю контролюєте зону сибілянтів (5–9 кГц) та повітря до 14+ кГц. Під час роботи з полицями вище 15 кГц звіряйтеся зі спектроаналізатором.`
+    });
+  } else {
+    tips.push({
+      cls: 'warn',
+      text: isEn
+        ? `<strong>Caution with High-Shelf EQ above ${Math.round(bestHigh)} Hz:</strong> Reduced sensitivity above this threshold can tempt you to over-boost highs. Always use reference tracks and visual spectrum meters for the 12–20 kHz region.`
+        : `<strong>Обережність із High-Shelf вище ${Math.round(bestHigh)} Hz:</strong> Через спад чутливості вище цієї межі виникає спокуса надмірно піднімати верхні частоти. Використовуйте референс-треки та візуальний контроль спектра у зоні 12–20 кГц.`
+    });
+  }
+
+  if (bestLow <= 25) {
+    tips.push({
+      cls: 'good',
+      text: isEn
+        ? `<strong>Deep Sub-Bass Monitoring (${bestLow.toFixed(1)} Hz):</strong> Your headphones/monitors and hearing allow accurate control of kick fundamentals and 808 sub-bass.`
+        : `<strong>Глибокий моніторинг Sub-Bass (${bestLow.toFixed(1)} Hz):</strong> Ваші навушники/монітори та слух дозволяють контролювати інфра-низ і фундамент бочки (Kick) та 808-басу.`
+    });
+  } else {
+    tips.push({
+      cls: 'warn',
+      text: isEn
+        ? `<strong>Lower Limit ${bestLow.toFixed(1)} Hz:</strong> Your current playback system likely rolls off sub-bass. Check 20–45 Hz rumble on a visual analyzer.`
+        : `<strong>Нижній поріг ${bestLow.toFixed(1)} Hz:</strong> Ймовірно, поточна акустика або навушники мають спад на суб-басі. Перевіряйте зону 20–45 Hz за аналізатором.`
+    });
+  }
+
+  tips.push({
+    cls: '',
+    text: isEn
+      ? `<strong>Optimal Monitoring Level (ISO 226 Equal-Loudness):</strong> Human hearing is flattest around <strong>78–83 dB SPL (C-weighted)</strong>. Mixing too quietly hides sub-bass and air, while >85 dB SPL causes rapid ear fatigue.`
+      : `<strong>Оптимальний рівень моніторингу (Криві рівної гучності ISO 226):</strong> Максимальна лінійність людського слуху досягається при гучності моніторингу <strong>78–83 dB SPL (C-weighted)</strong>.`
+  });
+
+  adviceList.innerHTML = tips.map((item) => `<li class="${item.cls}">${item.text}</li>`).join('');
+
+  const asymBox = document.getElementById('asymmetryReportBox');
+  const lHigh = state.limits.L.high;
+  const rHigh = state.limits.R.high;
+
+  let asymHtml = '';
+  if (lHigh && rHigh) {
+    const diffHz = Math.abs(lHigh - rHigh);
+    asymHtml += isEn
+      ? `<p style="font-size:0.85rem; margin-bottom:8px;"><strong>L/R Upper Threshold Comparison:</strong> Left = <code>${Math.round(lHigh)} Hz</code>, Right = <code>${Math.round(rHigh)} Hz</code> (Δ <code>${Math.round(diffHz)} Hz</code>).</p>`
+      : `<p style="font-size:0.85rem; margin-bottom:8px;"><strong>Порівняння ВЧ-порогу L/R:</strong> Ліве вухо = <code>${Math.round(lHigh)} Hz</code>, Праве вухо = <code>${Math.round(rHigh)} Hz</code> (Різниця: <code>${Math.round(diffHz)} Hz</code>).</p>`;
+  } else {
+    asymHtml += isEn
+      ? `<p style="font-size:0.83rem; color:var(--text-muted);">Measure <strong>Left (L)</strong> and <strong>Right (R)</strong> channels separately in Tab 1 or Tab 2 to unlock L/R stereo symmetry diagnostics.</p>`
+      : `<p style="font-size:0.83rem; color:var(--text-muted);">Щоб отримати аналіз симетрії L/R для панорамування міксу, проведіть заміри окремо для <strong>Лівого (L)</strong> та <strong>Правого (R)</strong> каналу.</p>`;
+  }
+
+  asymBox.innerHTML = asymHtml;
+
+  // Populate ISO 7029 Table in current language
+  const isoBody = document.getElementById('isoTableBody');
+  if (isoBody) {
+    isoBody.innerHTML = isEn
+      ? `
+        <tr>
+          <td>Reference Youth (under 20 yrs)</td>
+          <td>18,500 – 20,000 Hz</td>
+          <td>Full perception of Air band and ultra-high harmonics</td>
+        </tr>
+        <tr>
+          <td>Studio Engineer (25–35 yrs)</td>
+          <td>15,500 – 17,800 Hz</td>
+          <td>Full control of presence & sibilance; visual check >17 kHz</td>
+        </tr>
+        <tr>
+          <td>Senior Producer / Mixer (35–50 yrs)</td>
+          <td>13,500 – 15,500 Hz</td>
+          <td>Critical midrange accuracy; verify HF air shelves via analyzer</td>
+        </tr>
+        <tr>
+          <td>Industry Veteran (50+ yrs)</td>
+          <td>11,000 – 13,500 Hz</td>
+          <td>Deep musical balance & M/S focus; visual metering above 12 kHz</td>
+        </tr>
+      `
+      : `
+        <tr>
+          <td>Еталонний діапазон (до 20 років)</td>
+          <td>18 500 – 20 000 Hz</td>
+          <td>Повний контроль Air-діапазону та ультрависоких гармонік</td>
+        </tr>
+        <tr>
+          <td>Активний студійний інженер (25–35 років)</td>
+          <td>15 500 – 17 800 Hz</td>
+          <td>Повний контроль присутності та сибілянтів, Air >17kHz за аналізатором</td>
+        </tr>
+        <tr>
+          <td>Досвідчений продюсер / інженер (35–50 років)</td>
+          <td>13 500 – 15 500 Hz</td>
+          <td>Висока чутливість до середини; контроль ВЧ-полиць через SPAN / Pro-Q</td>
+        </tr>
+        <tr>
+          <td>Ветеран індустрії (50+ років)</td>
+          <td>11 000 – 13 500 Hz</td>
+          <td>Фокус на музичному балансі; обов'язковий візуальний контроль вище 12 кГц</td>
+        </tr>
+      `;
+  }
+}
+
+function updateEarButtonsUI() {
+  document.querySelectorAll('#earSelector button').forEach((btn) => {
+    btn.classList.toggle('active', btn.dataset.ear === state.currentEar);
+  });
+  renderLimitCards();
 }
 
 // ==========================================
@@ -1119,12 +1401,20 @@ function resetQuizSession() {
 // ==========================================
 document.addEventListener('DOMContentLoaded', () => {
   loadSavedState();
-  updateFrequencyReadouts();
-  renderLimitCards();
   initSpectrumVisualizer();
   initAudiogramUI();
   initQuizUI();
-  renderSoundEngineerReport();
+  applyLanguage(state.lang);
+
+  // Language switcher (UA / EN)
+  document.querySelectorAll('#langSelector button').forEach((btn) => {
+    btn.addEventListener('click', () => {
+      applyLanguage(btn.dataset.lang);
+      if (state.quiz.difficulty !== 'pro') {
+        renderQuizOptionButtons();
+      }
+    });
+  });
 
   // Tab navigation
   document.querySelectorAll('.tab-btn').forEach((btn) => {
@@ -1155,12 +1445,10 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   });
 
-  // Panic stop button
   document.getElementById('panicStopBtn').addEventListener('click', () => {
     stopOscillatorImmediate();
   });
 
-  // Ear selector (L / L+R / R)
   document.querySelectorAll('#earSelector button').forEach((btn) => {
     btn.addEventListener('click', () => {
       state.currentEar = btn.dataset.ear;
@@ -1169,7 +1457,6 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   });
 
-  // Main logarithmic frequency slider
   const freqSlider = document.getElementById('freqLogSlider');
   freqSlider.addEventListener('input', (e) => {
     state.isSweeping = false;
@@ -1177,7 +1464,6 @@ document.addEventListener('DOMContentLoaded', () => {
     setFrequency(freq, false);
   });
 
-  // Fine frequency step buttons
   document.querySelectorAll('.fine-step-btns button').forEach((btn) => {
     btn.addEventListener('click', () => {
       const step = parseFloat(btn.dataset.step);
@@ -1185,24 +1471,16 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   });
 
-  // Tone mode selector (Pure Sine / Warble / Pulsed)
   document.getElementById('toneModeSelect').addEventListener('change', (e) => {
     state.toneMode = e.target.value;
-    if (state.isPlaying) {
-      startOscillator();
-    }
+    if (state.isPlaying) startOscillator();
   });
 
-  // Toggle tone generator button
   document.getElementById('toggleToneBtn').addEventListener('click', () => {
-    if (state.isPlaying) {
-      stopOscillatorImmediate();
-    } else {
-      startOscillator();
-    }
+    if (state.isPlaying) stopOscillatorImmediate();
+    else startOscillator();
   });
 
-  // Automated Sweeps
   document.getElementById('startLowSweepBtn').addEventListener('click', () => {
     startFrequencySweep(120, 15);
   });
@@ -1215,7 +1493,6 @@ document.addEventListener('DOMContentLoaded', () => {
     startFrequencySweep(20, 22000);
   });
 
-  // Capture Low & High Hearing Limits
   document.getElementById('markLowLimitBtn').addEventListener('click', () => {
     recordLimit('low');
   });
@@ -1235,7 +1512,6 @@ document.addEventListener('DOMContentLoaded', () => {
     renderSoundEngineerReport();
   });
 
-  // Quick frequency preset pills
   document.querySelectorAll('#quickFreqPills button').forEach((btn) => {
     btn.addEventListener('click', () => {
       state.isSweeping = false;
@@ -1245,7 +1521,6 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   });
 
-  // Audiogram Controls
   document.querySelectorAll('[data-ag-ear]').forEach((btn) => {
     btn.addEventListener('click', () => {
       state.audiogram.activeEar = btn.dataset.agEar;
@@ -1278,11 +1553,8 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 
   document.getElementById('agPlayToneBtn').addEventListener('click', () => {
-    if (state.audiogram.isPlayingAg) {
-      stopOscillatorImmediate();
-    } else {
-      playAudiogramTone();
-    }
+    if (state.audiogram.isPlayingAg) stopOscillatorImmediate();
+    else playAudiogramTone();
   });
 
   document.getElementById('agRecordPointBtn').addEventListener('click', () => {
@@ -1293,7 +1565,6 @@ document.addEventListener('DOMContentLoaded', () => {
     drawAudiogramCanvas();
     renderSoundEngineerReport();
 
-    // Advance to next frequency automatically
     if (state.audiogram.activeFreqIndex < AUDIOGRAM_FREQS.length - 1) {
       selectAudiogramFreq(state.audiogram.activeFreqIndex + 1);
     } else {
@@ -1340,25 +1611,17 @@ document.addEventListener('DOMContentLoaded', () => {
 
   document.getElementById('quizTimbreSelect').addEventListener('change', (e) => {
     state.quiz.timbre = e.target.value;
-    if (state.quiz.isPlayingMystery) {
-      playQuizMysteryTone();
-    }
+    if (state.quiz.isPlayingMystery) playQuizMysteryTone();
   });
 
   document.getElementById('quizPlayMysteryBtn').addEventListener('click', () => {
-    if (state.quiz.isPlayingMystery) {
-      stopOscillatorImmediate();
-    } else {
-      playQuizMysteryTone();
-    }
+    if (state.quiz.isPlayingMystery) stopOscillatorImmediate();
+    else playQuizMysteryTone();
   });
 
   document.getElementById('quizPlayRefBtn').addEventListener('click', () => {
-    if (state.quiz.isPlayingRef) {
-      stopOscillatorImmediate();
-    } else {
-      playQuizReferenceTone();
-    }
+    if (state.quiz.isPlayingRef) stopOscillatorImmediate();
+    else playQuizReferenceTone();
   });
 
   document.getElementById('quizNextQuestionBtn').addEventListener('click', () => {
@@ -1389,6 +1652,7 @@ document.addEventListener('DOMContentLoaded', () => {
   document.getElementById('exportJsonBtn').addEventListener('click', () => {
     const payload = {
       app: 'SonicRange Pro — Sound Engineer Hearing Profile',
+      repository: 'https://github.com/mozhenko/sonic-range-analyzer',
       timestamp: new Date().toISOString(),
       limitsHz: state.limits,
       audiogramDbFS: state.audiogram.points,
@@ -1406,12 +1670,10 @@ document.addEventListener('DOMContentLoaded', () => {
     URL.revokeObjectURL(url);
   });
 
-  // Print / Save PDF Report
   document.getElementById('printReportBtn').addEventListener('click', () => {
     window.print();
   });
 
-  // Studio Keyboard Shortcuts
   window.addEventListener('keydown', (e) => {
     if (['INPUT', 'SELECT', 'TEXTAREA'].includes(e.target.tagName)) return;
 
@@ -1433,7 +1695,6 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   });
 
-  // PWA Install Prompt & Offline Service Worker Registration
   let deferredInstallPrompt = null;
   const installBtn = document.getElementById('installPwaBtn');
 
@@ -1457,5 +1718,3 @@ document.addEventListener('DOMContentLoaded', () => {
     navigator.serviceWorker.register('./sw.js').catch(() => {});
   }
 });
-
-

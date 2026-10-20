@@ -1,10 +1,15 @@
 {
   "name": "sonic-range-pro",
-  "version": "1.0.0",
-  "description": "SonicRange Pro — Аудіометрія та вимірювання частотного діапазону слуху для звукорежисерів",
+  "version": "1.1.0",
+  "description": "SonicRange Pro — Аудіометрія, вимірювання частотного діапазону слуху та вікторина для звукорежисерів (UA / EN)",
   "main": "electron-main.js",
-  "author": "SonicRange Studio Lab",
+  "author": "mozhenko (https://github.com/mozhenko)",
   "license": "MIT",
+  "homepage": "https://mozhenko.github.io/sonic-range-analyzer/",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/mozhenko/sonic-range-analyzer.git"
+  },
   "scripts": {
     "start": "electron .",
     "dist:mac": "electron-builder --mac",
@@ -12,7 +17,7 @@
     "dist:all": "electron-builder -mw"
   },
   "build": {
-    "appId": "com.sonicrange.pro.studio",
+    "appId": "com.mozhenko.sonicrange.pro",
     "productName": "SonicRange Pro",
     "files": [
       "index.html",
