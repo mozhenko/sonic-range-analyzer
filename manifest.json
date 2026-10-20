@@ -1,7 +1,7 @@
 {
   "name": "SonicRange Pro — Аудіометрія для звукорежисерів",
   "short_name": "SonicRange Pro",
-  "description": "Лабораторія вимірювання частотного діапазону та АЧХ слуху для звукорежисерів і студентів",
+  "description": "Лабораторія вимірювання частотного діапазону, АЧХ слуху та вікторина для звукорежисерів і студентів",
   "lang": "uk",
   "start_url": "./index.html",
   "scope": "./",
@@ -11,10 +11,22 @@
   "theme_color": "#131822",
   "icons": [
     {
+      "src": "icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
       "src": "icon.svg",
       "sizes": "any",
       "type": "image/svg+xml",
-      "purpose": "any maskable"
+      "purpose": "any"
     }
   ]
 }
