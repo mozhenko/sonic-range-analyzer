@@ -852,8 +852,8 @@ function playAudiogramTone() {
   updatePanningNode();
 
   setFrequency(freq, true);
-  state.audiogram.isPlayingAg = true;
   startOscillator(state.audiogram.currentDb);
+  state.audiogram.isPlayingAg = true;
   updatePlaybackUI();
 }
 
@@ -1534,10 +1534,12 @@ document.addEventListener('DOMContentLoaded', () => {
     state.audiogram.currentDb = parseInt(e.target.value, 10);
     updateAudiogramUI();
     if (state.audiogram.isPlayingAg && state.toneGain && state.audioCtx) {
+      const now = state.audioCtx.currentTime;
+      state.toneGain.gain.cancelScheduledValues(now);
       state.toneGain.gain.setTargetAtTime(
         dbToLinear(state.audiogram.currentDb),
-        state.audioCtx.currentTime,
-        0.02
+        now,
+        0.015
       );
     }
   });
@@ -1684,6 +1686,9 @@ document.addEventListener('DOMContentLoaded', () => {
       if (state.activeTab === 'quiz') {
         if (state.quiz.isPlayingMystery) stopOscillatorImmediate();
         else playQuizMysteryTone();
+      } else if (state.activeTab === 'audiogram') {
+        if (state.audiogram.isPlayingAg) stopOscillatorImmediate();
+        else playAudiogramTone();
       } else {
         if (state.isPlaying) stopOscillatorImmediate();
         else startOscillator();
